@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Campaign {
+  id                  String    @id @default(uuid())
+  name                String
+  subdomain           String    @unique
+  status              String    @default("draft")
+  currentVersionId    String?
+  landingPageVersions LandingPageVersion[]
+  disclosures         DisclosureVersion[]
+  sponsors            CampaignSponsor[]
+  leads               Lead[]
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model LandingPageVersion {
+  id             String   @id @default(uuid())
+  campaign       Campaign @relation(fields: [campaignId], references: [id])
+  campaignId     String
+  templateRef    String
+  content        Json
+  disclosure     DisclosureVersion @relation(fields: [disclosureVersionId], references: [id])
+  disclosureVersionId String
+  status         String   @default("draft")
+  publishedAt    DateTime?
+  createdAt      DateTime @default(now())
+  leads          Lead[]
+}
+
+model DisclosureVersion {
+  id         String    @id @default(uuid())
+  campaign   Campaign? @relation(fields: [campaignId], references: [id])
+  campaignId String?
+  hash       String
+  text       String
+  createdAt  DateTime  @default(now())
+  landingPages LandingPageVersion[]
+  leads        Lead[]
+}
+
+model Sponsor {
+  id          String              @id @default(uuid())
+  name        String
+  webhookEndpoint String
+  privacyUrl  String
+  termsUrl    String?
+  deliveries  DeliveryAttempt[]
+  suppressions Suppression[]
+  campaigns   CampaignSponsor[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+model CampaignSponsor {
+  id         String   @id @default(uuid())
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  campaignId String
+  sponsor    Sponsor  @relation(fields: [sponsorId], references: [id])
+  sponsorId  String
+  role       String   // primary, co-reg
+}
+
+model Lead {
+  id                   String    @id @default(uuid())
+  email                String
+  name                 String?
+  campaign             Campaign  @relation(fields: [campaignId], references: [id])
+  campaignId           String
+  landingPageVersion   LandingPageVersion? @relation(fields: [landingPageVersionId], references: [id])
+  landingPageVersionId String?
+  disclosureVersion    DisclosureVersion?  @relation(fields: [disclosureVersionId], references: [id])
+  disclosureVersionId  String?
+  disclosureHash       String?
+  consentedAt          DateTime  @default(now())
+  metadata             Json?
+  deliveryAttempts     DeliveryAttempt[]
+  events               LeadEvent[]
+  createdAt            DateTime  @default(now())
+}
+
+model LeadEvent {
+  id        String   @id @default(uuid())
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  leadId    String
+  type      String   // consent_recorded, delivery_queued, delivery_succeeded, delivery_failed
+  detail    Json?
+  createdAt DateTime @default(now())
+}
+
+model DeliveryAttempt {
+  id        String   @id @default(uuid())
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  leadId    String
+  sponsor   Sponsor  @relation(fields: [sponsorId], references: [id])
+  sponsorId String
+  method    String   // webhook, csv, sftp
+  status    String   // pending, sent, failed, suppressed
+  response  Json?
+  attemptAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Suppression {
+  id        String   @id @default(uuid())
+  sponsor   Sponsor  @relation(fields: [sponsorId], references: [id])
+  sponsorId String
+  emailHash String
+  createdAt DateTime @default(now())
+}
