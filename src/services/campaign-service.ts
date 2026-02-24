@@ -46,6 +46,15 @@ export class CampaignService {
     );
   }
 
+  getPublishedLandingBySubdomainAndSlug(
+    subdomain: string,
+    slug: string
+  ): Promise<LandingPageDetail | null> {
+    return this.repo.findPublishedLandingBySubdomainAndSlug(subdomain, slug).then((detail) =>
+      this.attachDisclosure(detail)
+    );
+  }
+
   async getLatestLandingVersion(subdomain: string): Promise<LandingPageDetail | null> {
     const campaign = await this.repo.findCampaignBySubdomain(subdomain);
     if (!campaign) return null;

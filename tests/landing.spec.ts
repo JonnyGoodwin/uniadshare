@@ -31,7 +31,13 @@ describe('landing retrieval and disclosures', () => {
       url: `/api/campaigns/${campaignId}/landing-versions`,
       payload: {
         templateRef: 'basic',
-        content: { headline: 'Hello world' },
+        content: {
+          headline: 'Hello world',
+          body: 'Top operators only',
+          ctaLabel: 'Join Free',
+          consentLabel: 'I agree',
+          successMessage: 'Thanks'
+        },
         disclosureVersionId: disclosureId
       }
     });
@@ -71,6 +77,14 @@ describe('landing retrieval and disclosures', () => {
     expect(hostRes.headers['content-type']).toContain('text/html');
     expect(hostRes.payload).toContain('Hello world');
     expect(hostRes.payload).toContain('Primary publisher');
+
+    const hostVersionRes = await app.inject({
+      method: 'GET',
+      url: `/?versionId=${versionId}`,
+      headers: { host: 'lander.example.com' }
+    });
+    expect(hostVersionRes.statusCode).toBe(200);
+    expect(hostVersionRes.payload).toContain('Hello world');
 
     const draftRes = await app.inject({
       method: 'GET',

@@ -1,10 +1,13 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyReply } from 'fastify';
 import { z } from 'zod';
 
 import type { CampaignService } from '../services/campaign-service.js';
 import { renderLandingPage } from '../templates/render.js';
 
 const landingParamsSchema = z.object({
+  subdomain: z.string().min(1)
+});
+const previewParamsSchema = z.object({
   subdomain: z.string().min(1)
 });
 
@@ -26,6 +29,45 @@ function extractSubdomain(host: string | undefined, baseDomain?: string): string
 }
 
 export function registerLandingRoutes(app: FastifyInstance, campaignService: CampaignService): void {
+  async function resolveLandingBySubdomain(
+    subdomain: string,
+    query: { versionId?: string; draft?: boolean }
+  ) {
+    if (query.versionId) {
+      return campaignService.getLandingVersionBySubdomain(subdomain, query.versionId);
+    }
+    if (query.draft) {
+      return campaignService.getLatestLandingVersion(subdomain);
+    }
+    return campaignService.getPublishedLandingBySubdomain(subdomain);
+  }
+
+  async function sendLandingHtml(
+    reply: { header: (name: string, value: string) => void; send: (payload: string) => unknown },
+    landing: {
+      templateRef: string;
+      content: Record<string, unknown>;
+      disclosure?: { text: string } | null;
+      campaignId: string;
+      id: string;
+      disclosureVersionId?: string | null;
+    }
+  ) {
+    const html = renderLandingPage(
+      landing.templateRef,
+      landing.content,
+      landing.disclosure?.text ?? undefined,
+      {
+        campaignId: landing.campaignId,
+        landingPageVersionId: landing.id,
+        disclosureVersionId: landing.disclosureVersionId
+      }
+    );
+
+    reply.header('content-type', 'text/html');
+    return reply.send(html);
+  }
+
   app.get('/api/landing/:subdomain', async (request, reply) => {
     const params = landingParamsSchema.safeParse(request.params);
     const query = landingQuerySchema.safeParse(request.query);
@@ -40,13 +82,7 @@ export function registerLandingRoutes(app: FastifyInstance, campaignService: Cam
     }
 
     const { subdomain } = params.data;
-    const versionId = query.data.versionId;
-
-    const landing = versionId
-      ? await campaignService.getLandingVersionBySubdomain(subdomain, versionId)
-      : query.data.draft
-      ? await campaignService.getLatestLandingVersion(subdomain)
-      : await campaignService.getPublishedLandingBySubdomain(subdomain);
+    const landing = await resolveLandingBySubdomain(subdomain, query.data);
 
     if (!landing) {
       return reply.notFound('Landing page not found');
@@ -67,23 +103,79 @@ export function registerLandingRoutes(app: FastifyInstance, campaignService: Cam
   });
 
   app.get('/', async (request, reply) => {
+    const query = landingQuerySchema.safeParse(request.query);
+    if (!query.success) {
+      const message = query.error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');
+      return reply.badRequest(message);
+    }
+
     const subdomain = extractSubdomain(request.headers.host, request.server.config.BASE_DOMAIN);
     if (!subdomain) {
       return reply.notFound('Subdomain not found');
     }
 
-    const landing = await campaignService.getPublishedLandingBySubdomain(subdomain);
+    const landing = await resolveLandingBySubdomain(subdomain, query.data);
+
     if (!landing) {
       return reply.notFound('Landing page not found');
     }
 
-    const html = renderLandingPage(
-      landing.templateRef,
-      landing.content,
-      landing.disclosure?.text ?? undefined
-    );
+    return sendLandingHtml(reply, landing);
+  });
 
-    reply.header('content-type', 'text/html');
-    return reply.send(html);
+  async function handlePreview(
+    request: { params: unknown; query: unknown },
+    reply: FastifyReply
+  ) {
+    const params = previewParamsSchema.safeParse(request.params);
+    const query = landingQuerySchema.safeParse(request.query);
+    if (!params.success || !query.success) {
+      const errors = [
+        ...(params.success ? [] : params.error.errors),
+        ...(query.success ? [] : query.error.errors)
+      ];
+      const message = errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');
+      return reply.badRequest(message);
+    }
+
+    const landing = await resolveLandingBySubdomain(params.data.subdomain, query.data);
+    if (!landing) {
+      return reply.notFound('Landing page not found');
+    }
+
+    return sendLandingHtml(reply, landing);
+  }
+
+  app.get('/preview/:subdomain', async (request, reply) => {
+    return handlePreview(request, reply);
+  });
+
+  app.get('/api/preview/:subdomain', async (request, reply) => {
+    return handlePreview(request, reply);
+  });
+
+  app.get('/:slug', async (request, reply) => {
+    const slugParams = z.object({ slug: z.string().min(1) }).safeParse(request.params);
+    if (!slugParams.success) {
+      const message = slugParams.error.errors
+        .map((err) => `${err.path.join('.')}: ${err.message}`)
+        .join('; ');
+      return reply.badRequest(message);
+    }
+
+    const subdomain = extractSubdomain(request.headers.host, request.server.config.BASE_DOMAIN);
+    if (!subdomain) {
+      return reply.notFound('Subdomain not found');
+    }
+
+    const landing = await campaignService.getPublishedLandingBySubdomainAndSlug(
+      subdomain,
+      slugParams.data.slug
+    );
+    if (!landing) {
+      return reply.notFound('Landing page not found');
+    }
+
+    return sendLandingHtml(reply, landing);
   });
 }

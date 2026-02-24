@@ -33,17 +33,48 @@ export class InMemoryCampaignRepository implements CampaignRepository {
   }
 
   async createLandingPageVersion(input: CreateLandingPageVersionInput): Promise<LandingPageVersion> {
+    const campaign = this.campaigns.find((c) => c.id === input.campaignId);
+    if (!campaign) {
+      throw new Error('Campaign not found');
+    }
+
+    const normalizedSlug = input.slug?.trim().toLowerCase() || undefined;
+    const hasRoot = Boolean(campaign.currentVersionId);
+    if (hasRoot && !normalizedSlug) {
+      throw new Error('slug is required for non-root landing pages');
+    }
+
+    if (normalizedSlug) {
+      const duplicate = this.landingVersions.find(
+        (v) => v.campaignId === input.campaignId && v.slug?.toLowerCase() === normalizedSlug
+      );
+      if (duplicate) {
+        throw new Error('slug already exists for campaign');
+      }
+    }
+
+    const shouldAutoPublish = input.autoPublish !== false;
     const version: LandingPageVersion = {
       id: randomUUID(),
       campaignId: input.campaignId,
+      slug: normalizedSlug ?? null,
       templateRef: input.templateRef,
       content: input.content,
       disclosureVersionId: input.disclosureVersionId ?? null,
-      status: 'draft',
-      publishedAt: null,
+      status: shouldAutoPublish ? 'published' : 'draft',
+      publishedAt: shouldAutoPublish ? new Date() : null,
       createdAt: new Date()
     };
     this.landingVersions.push(version);
+
+    if (shouldAutoPublish) {
+      if (!campaign.currentVersionId) {
+        campaign.currentVersionId = version.id;
+      }
+      campaign.status = 'active';
+      campaign.updatedAt = new Date();
+    }
+
     return version;
   }
 
@@ -93,6 +124,23 @@ export class InMemoryCampaignRepository implements CampaignRepository {
     const campaign = await this.findCampaignBySubdomain(subdomain);
     if (!campaign?.currentVersionId) return null;
     const version = this.landingVersions.find((v) => v.id === campaign.currentVersionId);
+    if (!version) return null;
+    return { ...version, campaign };
+  }
+
+  async findPublishedLandingBySubdomainAndSlug(
+    subdomain: string,
+    slug: string
+  ): Promise<LandingPageDetail | null> {
+    const campaign = await this.findCampaignBySubdomain(subdomain);
+    if (!campaign) return null;
+    const normalizedSlug = slug.toLowerCase();
+    const version = this.landingVersions.find(
+      (v) =>
+        v.campaignId === campaign.id &&
+        v.status === 'published' &&
+        v.slug?.toLowerCase() === normalizedSlug
+    );
     if (!version) return null;
     return { ...version, campaign };
   }

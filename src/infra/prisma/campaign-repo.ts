@@ -12,6 +12,29 @@ import type {
   LandingPageVersion
 } from '../../domain/campaign.js';
 
+const SLUG_KEY = '__landingSlug';
+
+function extractSlug(content: Record<string, unknown>): string | null {
+  const candidate = content[SLUG_KEY];
+  return typeof candidate === 'string' && candidate.trim().length > 0 ? candidate : null;
+}
+
+function stripInternalContent(content: Record<string, unknown>): Record<string, unknown> {
+  const next = { ...content };
+  delete next[SLUG_KEY];
+  return next;
+}
+
+function withSlugInContent(content: Record<string, unknown>, slug?: string): Record<string, unknown> {
+  const next = { ...content };
+  if (slug) {
+    next[SLUG_KEY] = slug;
+  } else {
+    delete next[SLUG_KEY];
+  }
+  return next;
+}
+
 export class PrismaCampaignRepository implements CampaignRepository {
   async createCampaign(input: CreateCampaignInput): Promise<Campaign> {
     const record = await prisma.campaign.create({
@@ -34,21 +57,61 @@ export class PrismaCampaignRepository implements CampaignRepository {
   }
 
   async createLandingPageVersion(input: CreateLandingPageVersionInput): Promise<LandingPageVersion> {
+    const campaign = await prisma.campaign.findUnique({
+      where: { id: input.campaignId },
+      select: { currentVersionId: true }
+    });
+    if (!campaign) {
+      throw new Error('Campaign not found');
+    }
+
+    const normalizedSlug = input.slug?.trim().toLowerCase() || undefined;
+    if (campaign.currentVersionId && !normalizedSlug) {
+      throw new Error('slug is required for non-root landing pages');
+    }
+
+    if (normalizedSlug) {
+      const versions = await prisma.landingPageVersion.findMany({
+        where: { campaignId: input.campaignId },
+        select: { content: true }
+      });
+      const duplicate = versions.some((version) => {
+        const slug = extractSlug(version.content as Record<string, unknown>);
+        return slug?.toLowerCase() === normalizedSlug;
+      });
+      if (duplicate) {
+        throw new Error('slug already exists for campaign');
+      }
+    }
+
+    const shouldAutoPublish = input.autoPublish !== false;
     const record = await prisma.landingPageVersion.create({
       data: {
         campaignId: input.campaignId,
         templateRef: input.templateRef,
-        content: input.content,
+        content: withSlugInContent(input.content, normalizedSlug),
         disclosureVersionId: input.disclosureVersionId ?? null,
-        status: 'draft'
+        status: shouldAutoPublish ? 'published' : 'draft',
+        publishedAt: shouldAutoPublish ? new Date() : null
       }
     });
+
+    if (shouldAutoPublish) {
+      await prisma.campaign.update({
+        where: { id: input.campaignId },
+        data: {
+          status: 'active',
+          ...(campaign.currentVersionId ? {} : { currentVersionId: record.id })
+        }
+      });
+    }
 
     return {
       id: record.id,
       campaignId: record.campaignId,
+      slug: extractSlug(record.content as Record<string, unknown>),
       templateRef: record.templateRef,
-      content: record.content as Record<string, unknown>,
+      content: stripInternalContent(record.content as Record<string, unknown>),
       disclosureVersionId: record.disclosureVersionId,
       status: record.status as LandingPageVersion['status'],
       publishedAt: record.publishedAt,
@@ -73,9 +136,16 @@ export class PrismaCampaignRepository implements CampaignRepository {
         data: { status: 'published', publishedAt: new Date() }
       });
 
+      const campaign = await tx.campaign.findUnique({
+        where: { id: campaignId },
+        select: { currentVersionId: true }
+      });
       await tx.campaign.update({
         where: { id: campaignId },
-        data: { currentVersionId: versionId, status: 'active' }
+        data: {
+          status: 'active',
+          ...(campaign?.currentVersionId ? {} : { currentVersionId: versionId })
+        }
       });
 
       return published;
@@ -84,8 +154,9 @@ export class PrismaCampaignRepository implements CampaignRepository {
     return {
       id: updated.id,
       campaignId: updated.campaignId,
+      slug: extractSlug(updated.content as Record<string, unknown>),
       templateRef: updated.templateRef,
-      content: updated.content as Record<string, unknown>,
+      content: stripInternalContent(updated.content as Record<string, unknown>),
       disclosureVersionId: updated.disclosureVersionId,
       status: updated.status as LandingPageVersion['status'],
       publishedAt: updated.publishedAt,
@@ -136,8 +207,9 @@ export class PrismaCampaignRepository implements CampaignRepository {
     return {
       id: version.id,
       campaignId: version.campaignId,
+      slug: extractSlug(version.content as Record<string, unknown>),
       templateRef: version.templateRef,
-      content: version.content as Record<string, unknown>,
+      content: stripInternalContent(version.content as Record<string, unknown>),
       disclosureVersionId: version.disclosureVersionId,
       status: version.status as LandingPageVersion['status'],
       publishedAt: version.publishedAt,
@@ -159,24 +231,64 @@ export class PrismaCampaignRepository implements CampaignRepository {
     const campaign = await prisma.campaign.findUnique({
       where: { subdomain: subdomain.toLowerCase() },
       include: {
-        landingPageVersions: {
-          where: { status: 'published' },
-          orderBy: { publishedAt: 'desc' },
-          take: 1,
-          include: { disclosure: true }
-        }
+        landingPageVersions: { include: { disclosure: true } }
       }
     });
 
     if (!campaign) return null;
-    const version = campaign.landingPageVersions[0];
+    const version = campaign.currentVersionId
+      ? campaign.landingPageVersions.find((item) => item.id === campaign.currentVersionId)
+      : campaign.landingPageVersions
+          .filter((item) => item.status === 'published')
+          .sort((a, b) => (a.createdAt?.getTime?.() ?? 0) - (b.createdAt?.getTime?.() ?? 0))[0];
     if (!version) return null;
 
     return {
       id: version.id,
       campaignId: version.campaignId,
+      slug: extractSlug(version.content as Record<string, unknown>),
       templateRef: version.templateRef,
-      content: version.content as Record<string, unknown>,
+      content: stripInternalContent(version.content as Record<string, unknown>),
+      disclosureVersionId: version.disclosureVersionId,
+      status: version.status as LandingPageVersion['status'],
+      publishedAt: version.publishedAt,
+      createdAt: version.createdAt,
+      disclosure: version.disclosure
+        ? { id: version.disclosure.id, hash: version.disclosure.hash, text: version.disclosure.text }
+        : null,
+      campaign: {
+        id: campaign.id,
+        name: campaign.name,
+        subdomain: campaign.subdomain
+      }
+    };
+  }
+
+  async findPublishedLandingBySubdomainAndSlug(
+    subdomain: string,
+    slug: string
+  ): Promise<LandingPageDetail | null> {
+    const campaign = await prisma.campaign.findUnique({
+      where: { subdomain: subdomain.toLowerCase() },
+      include: {
+        landingPageVersions: { where: { status: 'published' }, include: { disclosure: true } }
+      }
+    });
+    if (!campaign) return null;
+
+    const normalizedSlug = slug.toLowerCase();
+    const version = campaign.landingPageVersions.find((item) => {
+      const itemSlug = extractSlug(item.content as Record<string, unknown>);
+      return itemSlug?.toLowerCase() === normalizedSlug;
+    });
+    if (!version) return null;
+
+    return {
+      id: version.id,
+      campaignId: version.campaignId,
+      slug: extractSlug(version.content as Record<string, unknown>),
+      templateRef: version.templateRef,
+      content: stripInternalContent(version.content as Record<string, unknown>),
       disclosureVersionId: version.disclosureVersionId,
       status: version.status as LandingPageVersion['status'],
       publishedAt: version.publishedAt,
@@ -203,8 +315,9 @@ export class PrismaCampaignRepository implements CampaignRepository {
     return {
       id: version.id,
       campaignId: version.campaignId,
+      slug: extractSlug(version.content as Record<string, unknown>),
       templateRef: version.templateRef,
-      content: version.content as Record<string, unknown>,
+      content: stripInternalContent(version.content as Record<string, unknown>),
       disclosureVersionId: version.disclosureVersionId,
       status: version.status as LandingPageVersion['status'],
       publishedAt: version.publishedAt,
@@ -247,8 +360,9 @@ export class PrismaCampaignRepository implements CampaignRepository {
     return versions.map((version) => ({
       id: version.id,
       campaignId: version.campaignId,
+      slug: extractSlug(version.content as Record<string, unknown>),
       templateRef: version.templateRef,
-      content: version.content as Record<string, unknown>,
+      content: stripInternalContent(version.content as Record<string, unknown>),
       disclosureVersionId: version.disclosureVersionId,
       status: version.status as LandingPageVersion['status'],
       publishedAt: version.publishedAt,

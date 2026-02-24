@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import type { CampaignService } from '../services/campaign-service.js';
 import type { DisclosureService } from '../services/disclosure-service.js';
+import { validateTemplateContent } from '../templates/catalog.js';
 
 const createCampaignSchema = z.object({
   name: z.string().min(1),
@@ -10,6 +11,12 @@ const createCampaignSchema = z.object({
 });
 
 const createLandingVersionSchema = z.object({
+  slug: z
+    .string()
+    .trim()
+    .min(1)
+    .regex(/^[a-z0-9-]+$/)
+    .optional(),
   templateRef: z.string().min(1),
   content: z.record(z.any()),
   disclosureVersionId: z.string().min(1).optional()
@@ -70,12 +77,23 @@ export function registerCampaignRoutes(
       }
     }
 
-    const version = await campaignService.createLandingPageVersion({
-      campaignId: params.data.campaignId,
-      ...body.data
-    });
+    const templateErrors = validateTemplateContent(body.data.templateRef, body.data.content);
+    if (templateErrors.length > 0) {
+      return reply.badRequest(templateErrors.join('; '));
+    }
 
-    return reply.code(201).send({ landingPageVersion: version });
+    try {
+      const version = await campaignService.createLandingPageVersion({
+        campaignId: params.data.campaignId,
+        ...body.data,
+        autoPublish: true
+      });
+
+      return reply.code(201).send({ landingPageVersion: version });
+    } catch (err) {
+      request.log.warn({ err }, 'Failed to create landing page version');
+      return reply.badRequest(err instanceof Error ? err.message : 'Failed to create landing page version');
+    }
   });
 
   app.post(

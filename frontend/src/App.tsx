@@ -1,8 +1,7 @@
-import { Outlet, RouterProvider, createBrowserRouter, NavLink } from 'react-router-dom';
+import { Outlet, RouterProvider, createBrowserRouter, NavLink, Navigate } from 'react-router-dom';
 
 import { CampaignsPage } from './pages/Campaigns';
 import { DeliveriesPage } from './pages/Deliveries';
-import { LandingPreviewPage } from './pages/LandingPreview';
 import { SponsorsPage } from './pages/Sponsors';
 
   const router = createBrowserRouter([
@@ -10,11 +9,10 @@ import { SponsorsPage } from './pages/Sponsors';
       path: '/',
       element: <Layout />,
       children: [
-        { index: true, element: <Dashboard /> },
-        { path: 'campaigns', element: <CampaignsPage /> },
+        { index: true, element: <CampaignsPage /> },
+        { path: 'campaigns', element: <Navigate to="/" replace /> },
         { path: 'sponsors', element: <SponsorsPage /> },
-        { path: 'deliveries', element: <DeliveriesPage /> },
-        { path: 'preview', element: <LandingPreviewPage /> }
+        { path: 'deliveries', element: <DeliveriesPage /> }
       ]
     }
   ]);
@@ -26,11 +24,9 @@ function Layout() {
         <aside className="w-64 bg-slate-900 text-slate-100 min-h-screen p-5 shadow-lg">
           <div className="text-xl font-semibold mb-6 tracking-tight">Acquisition Pods</div>
           <nav className="space-y-2">
-            <NavItem to="/">Dashboard</NavItem>
-            <NavItem to="/campaigns">Campaigns</NavItem>
+            <NavItem to="/">Campaigns</NavItem>
             <NavItem to="/sponsors">Sponsors</NavItem>
             <NavItem to="/deliveries">Deliveries</NavItem>
-            <NavItem to="/preview">Landing Preview</NavItem>
           </nav>
           <div className="mt-8 text-xs text-slate-400">
             Manage co-reg sponsors, publish landers, and monitor deliveries.
@@ -62,18 +58,6 @@ function NavItem({ to, children }: { to: string; children: React.ReactNode }) {
     >
       {children}
     </NavLink>
-  );
-}
-
-function Dashboard() {
-  return (
-    <div>
-      <h1 className="text-2xl font-semibold mb-2">Dashboard</h1>
-      <p className="text-slate-600">
-        Create campaigns, attach sponsors/co-reg partners, publish landing pages to subdomains, and monitor lead
-        deliveries.
-      </p>
-    </div>
   );
 }
 

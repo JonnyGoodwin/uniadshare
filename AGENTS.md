@@ -11,7 +11,7 @@ Use this guide to keep backend and frontend changes consistent for Acquisition P
 
 ## Build, Test, and Development Commands
 
-- Require Node 20+ (LTS); install deps at repo root with `npm install`, then emit Prisma client via `npx prisma generate`.
+- Require Node 18.17+; install deps at repo root with `npm install`, then emit Prisma client via `npx prisma generate`.
 - Backend: `npm run dev` (Fastify watch on port 3000), `npm run build` then `npm start` (compiled server), `npm test`, `npm run lint`, `npm run check` (lint + tests).
 - Frontend: from `frontend/`, run `npm install`, `npm run dev` (defaults to 5173), `npm run build`, `npm run lint`, `npm run preview`.
 - Swagger UI is available at `/docs` when the backend is running.

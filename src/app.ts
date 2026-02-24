@@ -15,6 +15,7 @@ import { registerDisclosureRoutes } from './routes/disclosures.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerLandingRoutes } from './routes/landing.js';
 import { registerLeadRoutes } from './routes/leads.js';
+import { registerTemplateRoutes } from './routes/templates.js';
 
 export function buildApp(env: Env, deps: Dependencies = createDependencies(env)): FastifyInstance {
   const app = Fastify({
@@ -45,6 +46,7 @@ export function buildApp(env: Env, deps: Dependencies = createDependencies(env))
   registerHealthRoutes(app);
   registerCampaignRoutes(app, deps.campaignService, deps.disclosureService);
   registerDisclosureRoutes(app, deps.disclosureService);
+  registerTemplateRoutes(app);
   registerLandingRoutes(app, deps.campaignService);
   registerDeliveryRoutes(app, deps.deliveryService);
   registerConsentRoutes(app, deps.leadService);

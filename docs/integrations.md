@@ -46,4 +46,32 @@ Notes:
 Any 2xx response marks the delivery as `sent`. Non-2xx or network errors mark it as `failed` after retries.
 
 ## Admin API Access
-Admin endpoints (e.g., `GET /api/deliveries`) require `x-admin-key` if `ADMIN_API_KEY` is set in the backend environment. Set `VITE_ADMIN_KEY` in the frontend to pass this header automatically.
+Admin endpoints (e.g., `GET /api/deliveries`, `GET /api/consent`) require `x-admin-key` if `ADMIN_API_KEY` is set in the backend environment. Set `VITE_ADMIN_KEY` in the frontend to pass this header automatically.
+
+### Consent Evidence Endpoint
+- Endpoint: `GET /api/consent`
+- Auth: `x-admin-key` required when backend `ADMIN_API_KEY` is configured.
+- Query params:
+  - `email` (required, valid email)
+  - `campaignId` (optional)
+
+Response shape:
+```json
+{
+  "leads": [
+    {
+      "id": "uuid",
+      "email": "user@example.com",
+      "campaignId": "uuid",
+      "landingPageVersionId": "uuid",
+      "disclosureVersionId": "uuid",
+      "metadata": {
+        "ip": "string",
+        "userAgent": "string"
+      },
+      "consentedAt": "2026-01-01T00:00:00.000Z",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ]
+}
+```

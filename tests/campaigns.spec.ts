@@ -26,7 +26,13 @@ describe('campaigns', () => {
       url: `/api/campaigns/${campaignId}/landing-versions`,
       payload: {
         templateRef: 'basic',
-        content: { headline: 'Hello' }
+        content: {
+          headline: 'Hello',
+          body: 'Body copy',
+          ctaLabel: 'Join',
+          consentLabel: 'I agree',
+          successMessage: 'Thanks'
+        }
       }
     });
 

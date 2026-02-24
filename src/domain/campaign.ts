@@ -11,6 +11,7 @@ export type Campaign = {
 export type LandingPageVersion = {
   id: string;
   campaignId: string;
+  slug?: string | null;
   templateRef: string;
   content: Record<string, unknown>;
   disclosureVersionId?: string | null;
@@ -58,9 +59,11 @@ export type CreateCampaignInput = {
 
 export type CreateLandingPageVersionInput = {
   campaignId: string;
+  slug?: string;
   templateRef: string;
   content: Record<string, unknown>;
   disclosureVersionId?: string;
+  autoPublish?: boolean;
 };
 
 export interface CampaignRepository {
@@ -71,6 +74,7 @@ export interface CampaignRepository {
   findCampaignBySubdomain(subdomain: string): Promise<Campaign | null>;
   findLandingPageVersion(campaignId: string, versionId: string): Promise<LandingPageDetail | null>;
   findPublishedLandingBySubdomain(subdomain: string): Promise<LandingPageDetail | null>;
+  findPublishedLandingBySubdomainAndSlug(subdomain: string, slug: string): Promise<LandingPageDetail | null>;
   findLatestLandingVersion(campaignId: string): Promise<LandingPageDetail | null>;
   listCampaigns(): Promise<CampaignSummary[]>;
   listLandingVersions(campaignId: string): Promise<LandingPageDetail[]>;

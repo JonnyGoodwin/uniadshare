@@ -14,7 +14,7 @@
     "test": "vitest run",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "check": "npm run lint && npm run test -- --runInBand"
+    "check": "npm run lint && npm run test"
   },
   "dependencies": {
     "@fastify/cors": "^8.5.0",

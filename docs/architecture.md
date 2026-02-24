@@ -9,7 +9,7 @@ This system manages campaigns, landing pages, disclosures, and lead delivery to 
 4. Render or fetch the landing via:
    - HTML: `http://<subdomain>.localhost:PORT/` (requires `BASE_DOMAIN`)
    - JSON: `GET /api/landing/:subdomain`
-5. Capture leads via `POST /api/leads` with a disclosure version ID.
+5. Capture leads via `POST /api/leads` (optionally including a disclosure version ID).
 6. Enqueue deliveries to sponsor webhooks and track attempts in the delivery queue.
 
 ## Key Components

@@ -13,6 +13,7 @@ export type CampaignSummary = {
 
 export type LandingPageVersion = {
   id: string;
+  slug?: string | null;
   templateRef: string;
   status: string;
   publishedAt?: string;
@@ -35,6 +36,22 @@ export type Delivery = {
   status: string;
   endpoint: string;
   attempts?: Array<{ status: string; at?: string }>;
+};
+
+export type LandingTemplateField = {
+  key: string;
+  label: string;
+  type: 'text' | 'textarea';
+  required?: boolean;
+  placeholder?: string;
+};
+
+export type LandingTemplate = {
+  ref: string;
+  name: string;
+  description: string;
+  fields: LandingTemplateField[];
+  defaultContent: Record<string, string>;
 };
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -102,7 +119,12 @@ export const api = {
 
   createLandingVersion: (
     campaignId: string,
-    payload: { templateRef: string; content: Record<string, unknown>; disclosureVersionId?: string }
+    payload: {
+      slug?: string;
+      templateRef: string;
+      content: Record<string, unknown>;
+      disclosureVersionId?: string;
+    }
   ) =>
     request<{ landingPageVersion: LandingPageVersion }>(`/api/campaigns/${campaignId}/landing-versions`, {
       method: 'POST',
@@ -116,6 +138,7 @@ export const api = {
     ),
 
   listDeliveries: () => request<{ deliveries: Delivery[] }>('/api/deliveries'),
+  listTemplates: () => request<{ templates: LandingTemplate[] }>('/api/templates'),
 
   fetchLanding: (subdomain: string, params: Record<string, string | boolean | undefined> = {}) => {
     const search = new URLSearchParams();

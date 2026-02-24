@@ -35,7 +35,7 @@ Landing-page and consent ledger requirements live in `info.md`. This repo now in
 - `docs/integrations.md` — webhook payloads, retry rules, and admin headers.
 
 ## Development notes
-- ESM + TypeScript targeting Node 18+. Adjust `tsconfig.json` if runtime differs.
+- ESM + TypeScript targeting Node 18.17+.
 - Use `npm run check` locally or in CI to run lint + tests together.
 - Update `info.md` or add `docs/requirements.md` as requirements evolve; keep AGENTS.md in sync with any command changes.
 - Prisma schema defined in `prisma/schema.prisma`; run `npx prisma generate` after installing dependencies to emit the client.
@@ -51,6 +51,9 @@ Landing-page and consent ledger requirements live in `info.md`. This repo now in
   - `GET /api/landing/:subdomain?draft=true` → fetch latest draft for preview.
   - `GET /` (host-based) → render HTML for the published landing when `BASE_DOMAIN` matches the Host header’s domain.
   - Example: with `BASE_DOMAIN=localhost:3000`, visit `http://subdomain.localhost:3000/`.
-  - `POST /api/campaigns/:campaignId/sponsors` → add sponsor with webhook endpoint/role; `GET/PATCH/DELETE /api/campaigns/:campaignId/sponsors/:sponsorId` to manage.
+  - `POST /api/campaigns/:campaignId/sponsors` → add sponsor with webhook endpoint/role.
+  - `GET /api/campaigns/:campaignId/sponsors` → list sponsors for a campaign.
+  - `PATCH/DELETE /api/campaigns/:campaignId/sponsors/:sponsorId` → update/remove a sponsor.
   - `GET /api/deliveries` → list delivery attempts (filterable by leadId/sponsorId).
+  - `GET /api/consent` → admin consent evidence lookup (`email` required, optional `campaignId`).
   - `POST /api/leads` → intake lead (email, campaignId, optional landingPageVersionId/disclosureVersionId + metadata).
