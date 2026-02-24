@@ -1,9 +1,9 @@
 # Architecture Overview
 
-This system manages campaigns, landing pages, disclosures, and lead delivery to sponsors.
+This system manages pods, landing pages, disclosures, and lead delivery to sponsors.
 
 ## Core Flow
-1. Create a campaign with a `subdomain`.
+1. Create a pod with a `subdomain`.
 2. Add sponsors (optional) with webhook endpoints.
 3. Create a landing page version and publish it.
 4. Render or fetch the landing via:
@@ -14,13 +14,13 @@ This system manages campaigns, landing pages, disclosures, and lead delivery to 
 
 ## Key Components
 - Fastify API: routes in `src/routes/` with Zod validation.
-- Services: `src/services/` contains campaign, disclosure, lead, and delivery orchestration.
+- Services: `src/services/` contains pod, disclosure, lead, and delivery orchestration.
 - Data layer: in-memory repositories by default; Prisma-backed repos when `DATABASE_URL` is set.
-- Frontend: `frontend/` provides an admin UI for campaigns, sponsors, landing versions, and delivery monitoring.
+- Frontend: `frontend/` provides an admin UI for pods, sponsors, landing versions, and delivery monitoring.
 
 ## Data Sources & Persistence
 - Without `DATABASE_URL`, data is ephemeral and resets on server restart.
-- With Postgres configured, Prisma persists campaigns, disclosures, leads, delivery attempts, and sponsors.
+- With Postgres configured, Prisma persists pods, disclosures, leads, delivery attempts, and sponsors.
 
 ## Delivery & Retry
 - Lead ingestion triggers webhook deliveries per sponsor.

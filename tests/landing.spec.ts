@@ -14,21 +14,21 @@ describe('landing retrieval and disclosures', () => {
   it('serves published landing with disclosure and supports preview by versionId', async () => {
     const campaignRes = await app.inject({
       method: 'POST',
-      url: '/api/campaigns',
+      url: '/api/pods',
       payload: { name: 'Landing Test', subdomain: 'lander' }
     });
-    const campaignId = campaignRes.json().campaign.id as string;
+    const podId = campaignRes.json().pod.id as string;
 
     const disclosureRes = await app.inject({
       method: 'POST',
-      url: `/api/campaigns/${campaignId}/disclosures`,
+      url: `/api/pods/${podId}/disclosures`,
       payload: { text: 'Primary publisher: Example; Co-reg: A, B' }
     });
     const disclosureId = disclosureRes.json().disclosure.id as string;
 
     const versionRes = await app.inject({
       method: 'POST',
-      url: `/api/campaigns/${campaignId}/landing-versions`,
+      url: `/api/pods/${podId}/landing-versions`,
       payload: {
         templateRef: 'basic',
         content: {
@@ -45,7 +45,7 @@ describe('landing retrieval and disclosures', () => {
 
     await app.inject({
       method: 'POST',
-      url: `/api/campaigns/${campaignId}/landing-versions/${versionId}/publish`
+      url: `/api/pods/${podId}/landing-versions/${versionId}/publish`
     });
 
     const publishedRes = await app.inject({

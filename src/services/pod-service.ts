@@ -1,42 +1,44 @@
 import type { DisclosureService } from './disclosure-service.js';
 import type {
-  Campaign,
-  CampaignRepository,
-  CreateCampaignInput,
+  Pod,
+  PodRepository,
+  CreatePodInput,
   CreateLandingPageVersionInput,
+  AddSponsorInput,
+  UpdateSponsorInput,
   LandingPageDetail,
   LandingPageVersion
-} from '../domain/campaign.js';
+} from '../domain/pod.js';
 
-export class CampaignService {
+export class PodService {
   constructor(
-    private readonly repo: CampaignRepository,
+    private readonly repo: PodRepository,
     private readonly disclosureService: DisclosureService
   ) {}
 
-  createCampaign(input: CreateCampaignInput): Promise<Campaign> {
-    return this.repo.createCampaign(input);
+  createPod(input: CreatePodInput): Promise<Pod> {
+    return this.repo.createPod(input);
   }
 
   createLandingPageVersion(input: CreateLandingPageVersionInput): Promise<LandingPageVersion> {
     return this.repo.createLandingPageVersion(input);
   }
 
-  publishLandingPageVersion(campaignId: string, versionId: string): Promise<LandingPageVersion> {
-    return this.repo.publishLandingPageVersion(campaignId, versionId);
+  publishLandingPageVersion(podId: string, versionId: string): Promise<LandingPageVersion> {
+    return this.repo.publishLandingPageVersion(podId, versionId);
   }
 
-  findById(id: string): Promise<Campaign | null> {
-    return this.repo.findCampaignById(id);
+  findById(id: string): Promise<Pod | null> {
+    return this.repo.findPodById(id);
   }
 
   async getLandingVersionBySubdomain(
     subdomain: string,
     versionId: string
   ): Promise<LandingPageDetail | null> {
-    const campaign = await this.repo.findCampaignBySubdomain(subdomain);
-    if (!campaign) return null;
-    const detail = await this.repo.findLandingPageVersion(campaign.id, versionId);
+    const pod = await this.repo.findPodBySubdomain(subdomain);
+    if (!pod) return null;
+    const detail = await this.repo.findLandingPageVersion(pod.id, versionId);
     return this.attachDisclosure(detail);
   }
 
@@ -56,34 +58,34 @@ export class CampaignService {
   }
 
   async getLatestLandingVersion(subdomain: string): Promise<LandingPageDetail | null> {
-    const campaign = await this.repo.findCampaignBySubdomain(subdomain);
-    if (!campaign) return null;
-    const detail = await this.repo.findLatestLandingVersion(campaign.id);
+    const pod = await this.repo.findPodBySubdomain(subdomain);
+    if (!pod) return null;
+    const detail = await this.repo.findLatestLandingVersion(pod.id);
     return this.attachDisclosure(detail);
   }
 
-  addSponsor(campaignId: string, input: AddSponsorInput) {
-    return this.repo.addSponsor(campaignId, input);
+  addSponsor(podId: string, input: AddSponsorInput) {
+    return this.repo.addSponsor(podId, input);
   }
 
-  listSponsors(campaignId: string) {
-    return this.repo.listSponsors(campaignId);
+  listSponsors(podId: string) {
+    return this.repo.listSponsors(podId);
   }
 
-  listLandingVersions(campaignId: string) {
-    return this.repo.listLandingVersions(campaignId);
+  listLandingVersions(podId: string) {
+    return this.repo.listLandingVersions(podId);
   }
 
-  listCampaigns() {
-    return this.repo.listCampaigns();
+  listPods() {
+    return this.repo.listPods();
   }
 
-  updateSponsor(campaignId: string, sponsorId: string, input: UpdateSponsorInput) {
-    return this.repo.updateSponsor(campaignId, sponsorId, input);
+  updateSponsor(podId: string, sponsorId: string, input: UpdateSponsorInput) {
+    return this.repo.updateSponsor(podId, sponsorId, input);
   }
 
-  removeSponsor(campaignId: string, sponsorId: string) {
-    return this.repo.removeSponsor(campaignId, sponsorId);
+  removeSponsor(podId: string, sponsorId: string) {
+    return this.repo.removeSponsor(podId, sponsorId);
   }
 
   private async attachDisclosure(detail: LandingPageDetail | null): Promise<LandingPageDetail | null> {

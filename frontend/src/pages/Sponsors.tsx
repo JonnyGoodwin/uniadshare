@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { Button, Card, TextInput } from '../components/Form';
 import { api } from '../lib/api';
-import type { CampaignSummary } from '../lib/api';
+import type { PodSummary } from '../lib/api';
 
 type Sponsor = {
   sponsorId: string;
@@ -12,8 +12,8 @@ type Sponsor = {
 };
 
 export function SponsorsPage() {
-  const [campaigns, setCampaigns] = useState<CampaignSummary[]>([]);
-  const [campaignId, setCampaignId] = useState('');
+  const [pods, setPods] = useState<PodSummary[]>([]);
+  const [podId, setPodId] = useState('');
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [form, setForm] = useState({
     name: '',
@@ -24,23 +24,23 @@ export function SponsorsPage() {
 
   useEffect(() => {
     api
-      .listCampaigns()
-      .then((res) => setCampaigns(res.campaigns))
+      .listPods()
+      .then((res) => setPods(res.pods))
       .catch((err) => setError(err.message));
   }, []);
 
   useEffect(() => {
-    if (!campaignId) return;
+    if (!podId) return;
     api
-      .listSponsors(campaignId)
+      .listSponsors(podId)
       .then((res) => setSponsors(res.sponsors))
       .catch((err) => setError(err.message));
-  }, [campaignId]);
+  }, [podId]);
 
   async function handleCreate() {
     setError(null);
     try {
-      const res = await api.createSponsor(campaignId, form);
+      const res = await api.createSponsor(podId, form);
       setSponsors((prev) => [...prev, res.sponsor]);
     } catch (err) {
       setError((err as Error).message);
@@ -50,7 +50,7 @@ export function SponsorsPage() {
   async function handleDelete(id: string) {
     setError(null);
     try {
-      await api.deleteSponsor(campaignId, id);
+      await api.deleteSponsor(podId, id);
       setSponsors((prev) => prev.filter((s) => s.sponsorId !== id));
     } catch (err) {
       setError((err as Error).message);
@@ -61,21 +61,21 @@ export function SponsorsPage() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Select Campaign</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Select Pod</label>
           <select
             className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-            value={campaignId}
-            onChange={(e) => setCampaignId(e.target.value)}
+            value={podId}
+            onChange={(e) => setPodId(e.target.value)}
           >
-            <option value="">-- choose campaign --</option>
-            {campaigns.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.subdomain})
+            <option value="">-- choose pod --</option>
+            {pods.map((pod) => (
+              <option key={pod.id} value={pod.id}>
+                {pod.name} ({pod.subdomain})
               </option>
             ))}
           </select>
         </div>
-        <Button onClick={() => campaignId && api.listSponsors(campaignId).then((res) => setSponsors(res.sponsors))}>
+        <Button onClick={() => podId && api.listSponsors(podId).then((res) => setSponsors(res.sponsors))}>
           Load Sponsors
         </Button>
       </div>
@@ -100,7 +100,7 @@ export function SponsorsPage() {
               onChange={(e) => setForm({ ...form, role: e.target.value })}
               placeholder="primary or co-reg"
             />
-            <Button onClick={handleCreate} disabled={!campaignId}>
+            <Button onClick={handleCreate} disabled={!podId}>
               Save Sponsor
             </Button>
             {error && <p className="text-sm text-red-600">{error}</p>}
@@ -108,7 +108,7 @@ export function SponsorsPage() {
         </Card>
 
         <Card title="Sponsors">
-          {!campaignId && <p className="text-sm text-slate-500">Select a campaign to load sponsors.</p>}
+          {!podId && <p className="text-sm text-slate-500">Select a pod to load sponsors.</p>}
           <div className="space-y-2">
             {sponsors.map((sponsor) => (
               <div

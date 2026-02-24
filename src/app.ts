@@ -8,7 +8,7 @@ import type { FastifyInstance } from 'fastify';
 import type { Env } from './config/env.js';
 import type { Dependencies } from './deps.js';
 import { createDependencies } from './deps.js';
-import { registerCampaignRoutes } from './routes/campaigns.js';
+import { registerPodRoutes } from './routes/pods.js';
 import { registerConsentRoutes } from './routes/consent.js';
 import { registerDeliveryRoutes } from './routes/deliveries.js';
 import { registerDisclosureRoutes } from './routes/disclosures.js';
@@ -44,10 +44,10 @@ export function buildApp(env: Env, deps: Dependencies = createDependencies(env))
   });
 
   registerHealthRoutes(app);
-  registerCampaignRoutes(app, deps.campaignService, deps.disclosureService);
+  registerPodRoutes(app, deps.podService, deps.disclosureService);
   registerDisclosureRoutes(app, deps.disclosureService);
   registerTemplateRoutes(app);
-  registerLandingRoutes(app, deps.campaignService);
+  registerLandingRoutes(app, deps.podService);
   registerDeliveryRoutes(app, deps.deliveryService);
   registerConsentRoutes(app, deps.leadService);
   registerLeadRoutes(app, deps.leadService, deps.disclosureService);

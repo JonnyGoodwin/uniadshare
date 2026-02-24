@@ -42,11 +42,25 @@ export const leadsContentToolkitTemplate: LandingTemplateModule = {
       placeholder: 'Lead magnet templates'
     },
     {
+      key: 'asset1Provider',
+      label: 'Asset 1 Provider',
+      type: 'text',
+      required: true,
+      placeholder: 'Partner A'
+    },
+    {
       key: 'asset2',
       label: 'Asset 2',
       type: 'text',
       required: true,
       placeholder: 'Headline swipe file'
+    },
+    {
+      key: 'asset2Provider',
+      label: 'Asset 2 Provider',
+      type: 'text',
+      required: true,
+      placeholder: 'Partner B'
     },
     {
       key: 'asset3',
@@ -56,11 +70,25 @@ export const leadsContentToolkitTemplate: LandingTemplateModule = {
       placeholder: 'Welcome sequence starter'
     },
     {
+      key: 'asset3Provider',
+      label: 'Asset 3 Provider',
+      type: 'text',
+      required: true,
+      placeholder: 'Partner C'
+    },
+    {
       key: 'asset4',
       label: 'Asset 4',
       type: 'text',
       required: true,
       placeholder: 'Weekly content planner'
+    },
+    {
+      key: 'asset4Provider',
+      label: 'Asset 4 Provider',
+      type: 'text',
+      required: true,
+      placeholder: 'Partner D'
     },
     {
       key: 'proofLine',
@@ -98,9 +126,13 @@ export const leadsContentToolkitTemplate: LandingTemplateModule = {
       'Steal the exact playbooks, prompts, and templates used to turn attention into subscribers and subscribers into revenue.',
     includesTitle: "What's included",
     asset1: 'Lead magnet angle generator + 50 proven offers',
+    asset1Provider: 'Growth Daily',
     asset2: 'High-performing headline and hook swipe file',
+    asset2Provider: 'Demand Engine',
     asset3: '7-day welcome sequence framework',
+    asset3Provider: 'Inbox Insights',
     asset4: 'Content-to-lead conversion planner',
+    asset4Provider: 'Content Lift',
     proofLine: 'Used by creators, agencies, and growth teams to scale acquisition faster.',
     ctaLabel: 'Send Me the Toolkit',
     consentLabel: 'I agree to receive emails from the publishers listed below.',
@@ -112,9 +144,13 @@ export const leadsContentToolkitTemplate: LandingTemplateModule = {
     const subheadline = escapeHtml(content.subheadline ?? '');
     const includesTitle = escapeHtml(content.includesTitle ?? "What's included");
     const asset1 = escapeHtml(content.asset1 ?? '');
+    const asset1Provider = escapeHtml(content.asset1Provider ?? 'Partner');
     const asset2 = escapeHtml(content.asset2 ?? '');
+    const asset2Provider = escapeHtml(content.asset2Provider ?? 'Partner');
     const asset3 = escapeHtml(content.asset3 ?? '');
+    const asset3Provider = escapeHtml(content.asset3Provider ?? 'Partner');
     const asset4 = escapeHtml(content.asset4 ?? '');
+    const asset4Provider = escapeHtml(content.asset4Provider ?? 'Partner');
     const proofLine = escapeHtml(content.proofLine ?? '');
 
     return `<!DOCTYPE html>
@@ -207,19 +243,26 @@ export const leadsContentToolkitTemplate: LandingTemplateModule = {
       display: grid;
       gap: 9px;
     }
-    .includes li {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      color: #0f172a;
-      font-size: 0.96rem;
-      line-height: 1.45;
-    }
+    .includes li { display: flex; gap: 10px; align-items: flex-start; }
     .includes li::before {
       content: '✓';
       color: var(--accent);
       font-weight: 800;
       margin-top: 1px;
+    }
+    .asset {
+      display: grid;
+      gap: 2px;
+      color: #0f172a;
+      font-size: 0.96rem;
+      line-height: 1.45;
+    }
+    .provider {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #475569;
+      font-weight: 700;
     }
     .proof {
       margin-top: 16px;
@@ -325,10 +368,10 @@ export const leadsContentToolkitTemplate: LandingTemplateModule = {
           <div class="includes">
             <h2>${includesTitle}</h2>
             <ul>
-              <li>${asset1}</li>
-              <li>${asset2}</li>
-              <li>${asset3}</li>
-              <li>${asset4}</li>
+              <li><div class="asset"><span>${asset1}</span><span class="provider">Provided by ${asset1Provider}</span></div></li>
+              <li><div class="asset"><span>${asset2}</span><span class="provider">Provided by ${asset2Provider}</span></div></li>
+              <li><div class="asset"><span>${asset3}</span><span class="provider">Provided by ${asset3Provider}</span></div></li>
+              <li><div class="asset"><span>${asset4}</span><span class="provider">Provided by ${asset4Provider}</span></div></li>
             </ul>
           </div>
 

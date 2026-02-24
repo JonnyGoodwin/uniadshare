@@ -1,6 +1,6 @@
 # Acquisition Pods Frontend
 
-Admin UI for managing campaigns, landing versions, sponsors, and delivery/consent monitoring.
+Admin UI for managing pods, landing versions, sponsors, and delivery/consent monitoring.
 
 ## Requirements
 - Node 18.17+

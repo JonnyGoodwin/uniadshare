@@ -1,7 +1,7 @@
 const API_BASE = import.meta.env.VITE_API_BASE ?? '';
 const ADMIN_KEY = import.meta.env.VITE_ADMIN_KEY;
 
-export type CampaignSummary = {
+export type PodSummary = {
   id: string;
   name: string;
   subdomain: string;
@@ -84,33 +84,33 @@ export type SponsorPayload = {
 };
 
 export const api = {
-  listCampaigns: () => request<{ campaigns: CampaignSummary[] }>('/api/campaigns'),
-  getCampaign: (campaignId: string) =>
+  listPods: () => request<{ pods: PodSummary[] }>('/api/pods'),
+  getPod: (podId: string) =>
     request<{
-      campaign: CampaignSummary;
+      pod: PodSummary;
       sponsors: Sponsor[];
       landingPageVersions: LandingPageVersion[];
-    }>(`/api/campaigns/${campaignId}`),
-  listSponsors: (campaignId: string) => request<{ sponsors: Sponsor[] }>(`/api/campaigns/${campaignId}/sponsors`),
-  createSponsor: (campaignId: string, payload: SponsorPayload) =>
-    request<{ sponsor: Sponsor }>(`/api/campaigns/${campaignId}/sponsors`, {
+    }>(`/api/pods/${podId}`),
+  listSponsors: (podId: string) => request<{ sponsors: Sponsor[] }>(`/api/pods/${podId}/sponsors`),
+  createSponsor: (podId: string, payload: SponsorPayload) =>
+    request<{ sponsor: Sponsor }>(`/api/pods/${podId}/sponsors`, {
       method: 'POST',
       body: JSON.stringify(payload)
     }),
-  updateSponsor: (campaignId: string, sponsorId: string, payload: Partial<SponsorPayload>) =>
-    request<{ sponsor: Sponsor }>(`/api/campaigns/${campaignId}/sponsors/${sponsorId}`, {
+  updateSponsor: (podId: string, sponsorId: string, payload: Partial<SponsorPayload>) =>
+    request<{ sponsor: Sponsor }>(`/api/pods/${podId}/sponsors/${sponsorId}`, {
       method: 'PATCH',
       body: JSON.stringify(payload)
     }),
-  deleteSponsor: (campaignId: string, sponsorId: string) =>
-    request<void>(`/api/campaigns/${campaignId}/sponsors/${sponsorId}`, { method: 'DELETE' }),
+  deleteSponsor: (podId: string, sponsorId: string) =>
+    request<void>(`/api/pods/${podId}/sponsors/${sponsorId}`, { method: 'DELETE' }),
 
-  createCampaign: (payload: { name: string; subdomain: string }) =>
-    request<{ campaign: CampaignSummary }>('/api/campaigns', { method: 'POST', body: JSON.stringify(payload) }),
+  createPod: (payload: { name: string; subdomain: string }) =>
+    request<{ pod: PodSummary }>('/api/pods', { method: 'POST', body: JSON.stringify(payload) }),
 
-  createDisclosure: (campaignId: string, text: string) =>
+  createDisclosure: (podId: string, text: string) =>
     request<{ disclosure: { id: string; hash: string; text: string } }>(
-      `/api/campaigns/${campaignId}/disclosures`,
+      `/api/pods/${podId}/disclosures`,
       {
         method: 'POST',
         body: JSON.stringify({ text })
@@ -118,7 +118,7 @@ export const api = {
     ),
 
   createLandingVersion: (
-    campaignId: string,
+    podId: string,
     payload: {
       slug?: string;
       templateRef: string;
@@ -126,14 +126,14 @@ export const api = {
       disclosureVersionId?: string;
     }
   ) =>
-    request<{ landingPageVersion: LandingPageVersion }>(`/api/campaigns/${campaignId}/landing-versions`, {
+    request<{ landingPageVersion: LandingPageVersion }>(`/api/pods/${podId}/landing-versions`, {
       method: 'POST',
       body: JSON.stringify(payload)
     }),
 
-  publishLandingVersion: (campaignId: string, versionId: string) =>
+  publishLandingVersion: (podId: string, versionId: string) =>
     request<{ landingPageVersion: LandingPageVersion }>(
-      `/api/campaigns/${campaignId}/landing-versions/${versionId}/publish`,
+      `/api/pods/${podId}/landing-versions/${versionId}/publish`,
       { method: 'POST' }
     ),
 

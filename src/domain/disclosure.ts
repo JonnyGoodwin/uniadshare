@@ -1,11 +1,11 @@
 export type DisclosureInput = {
-  campaignId?: string;
+  podId?: string;
   text: string;
 };
 
 export type DisclosureVersion = {
   id: string;
-  campaignId?: string | null;
+  podId?: string | null;
   text: string;
   hash: string;
   createdAt: Date;

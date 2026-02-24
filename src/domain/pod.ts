@@ -1,4 +1,4 @@
-export type Campaign = {
+export type Pod = {
   id: string;
   name: string;
   subdomain: string;
@@ -10,7 +10,7 @@ export type Campaign = {
 
 export type LandingPageVersion = {
   id: string;
-  campaignId: string;
+  podId: string;
   slug?: string | null;
   templateRef: string;
   content: Record<string, unknown>;
@@ -26,15 +26,15 @@ export type LandingPageDetail = LandingPageVersion & {
     hash: string;
     text: string;
   } | null;
-  campaign?: Pick<Campaign, 'id' | 'name' | 'subdomain'>;
+  pod?: Pick<Pod, 'id' | 'name' | 'subdomain'>;
 };
 
-export type CampaignSummary = Pick<Campaign, 'id' | 'name' | 'subdomain' | 'status' | 'currentVersionId'> & {
+export type PodSummary = Pick<Pod, 'id' | 'name' | 'subdomain' | 'status' | 'currentVersionId'> & {
   createdAt: Date;
   updatedAt: Date;
 };
 
-export type CampaignSponsorLink = {
+export type PodSponsorLink = {
   sponsorId: string;
   name: string;
   webhookEndpoint: string;
@@ -52,13 +52,13 @@ export type AddSponsorInput = {
 };
 export type UpdateSponsorInput = Partial<AddSponsorInput>;
 
-export type CreateCampaignInput = {
+export type CreatePodInput = {
   name: string;
   subdomain: string;
 };
 
 export type CreateLandingPageVersionInput = {
-  campaignId: string;
+  podId: string;
   slug?: string;
   templateRef: string;
   content: Record<string, unknown>;
@@ -66,24 +66,24 @@ export type CreateLandingPageVersionInput = {
   autoPublish?: boolean;
 };
 
-export interface CampaignRepository {
-  createCampaign(input: CreateCampaignInput): Promise<Campaign>;
+export interface PodRepository {
+  createPod(input: CreatePodInput): Promise<Pod>;
   createLandingPageVersion(input: CreateLandingPageVersionInput): Promise<LandingPageVersion>;
-  publishLandingPageVersion(campaignId: string, versionId: string): Promise<LandingPageVersion>;
-  findCampaignById(id: string): Promise<Campaign | null>;
-  findCampaignBySubdomain(subdomain: string): Promise<Campaign | null>;
-  findLandingPageVersion(campaignId: string, versionId: string): Promise<LandingPageDetail | null>;
+  publishLandingPageVersion(podId: string, versionId: string): Promise<LandingPageVersion>;
+  findPodById(id: string): Promise<Pod | null>;
+  findPodBySubdomain(subdomain: string): Promise<Pod | null>;
+  findLandingPageVersion(podId: string, versionId: string): Promise<LandingPageDetail | null>;
   findPublishedLandingBySubdomain(subdomain: string): Promise<LandingPageDetail | null>;
   findPublishedLandingBySubdomainAndSlug(subdomain: string, slug: string): Promise<LandingPageDetail | null>;
-  findLatestLandingVersion(campaignId: string): Promise<LandingPageDetail | null>;
-  listCampaigns(): Promise<CampaignSummary[]>;
-  listLandingVersions(campaignId: string): Promise<LandingPageDetail[]>;
-  addSponsor(campaignId: string, input: AddSponsorInput): Promise<CampaignSponsorLink>;
-  listSponsors(campaignId: string): Promise<CampaignSponsorLink[]>;
+  findLatestLandingVersion(podId: string): Promise<LandingPageDetail | null>;
+  listPods(): Promise<PodSummary[]>;
+  listLandingVersions(podId: string): Promise<LandingPageDetail[]>;
+  addSponsor(podId: string, input: AddSponsorInput): Promise<PodSponsorLink>;
+  listSponsors(podId: string): Promise<PodSponsorLink[]>;
   updateSponsor(
-    campaignId: string,
+    podId: string,
     sponsorId: string,
     input: UpdateSponsorInput
-  ): Promise<CampaignSponsorLink>;
-  removeSponsor(campaignId: string, sponsorId: string): Promise<void>;
+  ): Promise<PodSponsorLink>;
+  removeSponsor(podId: string, sponsorId: string): Promise<void>;
 }

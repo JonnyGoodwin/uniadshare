@@ -5,7 +5,7 @@ import type { LeadService } from '../services/lead-service.js';
 
 const querySchema = z.object({
   email: z.string().email(),
-  campaignId: z.string().optional()
+  podId: z.string().optional()
 });
 
 function ensureAdmin(request: FastifyRequest): boolean {
@@ -27,7 +27,7 @@ export function registerConsentRoutes(app: FastifyInstance, leadService: LeadSer
       return reply.badRequest(message);
     }
 
-    const leads = await leadService.getConsentEvidence(parsed.data.email, parsed.data.campaignId);
+    const leads = await leadService.getConsentEvidence(parsed.data.email, parsed.data.podId);
     return reply.send({ leads });
   });
 }

@@ -5,7 +5,7 @@ export class PrismaDisclosureRepository implements DisclosureRepository {
   async create(input: DisclosureInput, hash: string): Promise<DisclosureVersion> {
     const record = await prisma.disclosureVersion.create({
       data: {
-        campaignId: input.campaignId ?? null,
+        podId: input.podId ?? null,
         text: input.text,
         hash
       }
@@ -13,7 +13,7 @@ export class PrismaDisclosureRepository implements DisclosureRepository {
 
     return {
       id: record.id,
-      campaignId: record.campaignId,
+      podId: record.podId,
       text: record.text,
       hash: record.hash,
       createdAt: record.createdAt
@@ -25,7 +25,7 @@ export class PrismaDisclosureRepository implements DisclosureRepository {
     if (!record) return null;
     return {
       id: record.id,
-      campaignId: record.campaignId,
+      podId: record.podId,
       text: record.text,
       hash: record.hash,
       createdAt: record.createdAt

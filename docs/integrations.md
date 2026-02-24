@@ -3,7 +3,7 @@
 This document covers webhook delivery for sponsor integrations and admin-facing API access.
 
 ## Sponsor Webhook Delivery
-When a lead is ingested (`POST /api/leads`), the system enqueues deliveries to all sponsors on the campaign. If a campaign has no sponsors, it uses `WEBHOOK_DEFAULT_ENDPOINT`.
+When a lead is ingested (`POST /api/leads`), the system enqueues deliveries to all sponsors on the pod. If a pod has no sponsors, it uses `WEBHOOK_DEFAULT_ENDPOINT`.
 
 ### Request
 - Method: `POST`
@@ -16,7 +16,7 @@ Payload shape:
   "lead": {
     "id": "uuid",
     "email": "user@example.com",
-    "campaignId": "uuid",
+    "podId": "uuid",
     "landingPageVersionId": "uuid",
     "disclosureVersionId": "uuid",
     "disclosureHash": "sha256-hex",
@@ -53,7 +53,7 @@ Admin endpoints (e.g., `GET /api/deliveries`, `GET /api/consent`) require `x-adm
 - Auth: `x-admin-key` required when backend `ADMIN_API_KEY` is configured.
 - Query params:
   - `email` (required, valid email)
-  - `campaignId` (optional)
+  - `podId` (optional)
 
 Response shape:
 ```json
@@ -62,7 +62,7 @@ Response shape:
     {
       "id": "uuid",
       "email": "user@example.com",
-      "campaignId": "uuid",
+      "podId": "uuid",
       "landingPageVersionId": "uuid",
       "disclosureVersionId": "uuid",
       "metadata": {

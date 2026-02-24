@@ -67,7 +67,7 @@ export function renderLeadCaptureScript(context: TemplateContext, successMessage
         const payload = {
           email: String(data.get('email') ?? ''),
           name: String(data.get('name') ?? ''),
-          campaignId: context.campaignId,
+          podId: context.podId,
           landingPageVersionId: context.landingPageVersionId,
           disclosureVersionId: context.disclosureVersionId ?? undefined,
           consentedAt: new Date().toISOString(),

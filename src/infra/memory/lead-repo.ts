@@ -19,9 +19,9 @@ export class InMemoryLeadRepository implements LeadRepository {
     return this.leads;
   }
 
-  async findByEmail(email: string, campaignId?: string): Promise<Lead[]> {
+  async findByEmail(email: string, podId?: string): Promise<Lead[]> {
     return this.leads.filter(
-      (l) => l.email.toLowerCase() === email.toLowerCase() && (!campaignId || l.campaignId === campaignId)
+      (l) => l.email.toLowerCase() === email.toLowerCase() && (!podId || l.podId === podId)
     );
   }
 }

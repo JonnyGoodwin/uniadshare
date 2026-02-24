@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Campaign {
+model Pod {
   id                  String    @id @default(uuid())
   name                String
   subdomain           String    @unique
@@ -15,7 +15,7 @@ model Campaign {
   currentVersionId    String?
   landingPageVersions LandingPageVersion[]
   disclosures         DisclosureVersion[]
-  sponsors            CampaignSponsor[]
+  sponsors            PodSponsor[]
   leads               Lead[]
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
@@ -23,8 +23,8 @@ model Campaign {
 
 model LandingPageVersion {
   id             String   @id @default(uuid())
-  campaign       Campaign @relation(fields: [campaignId], references: [id])
-  campaignId     String
+  pod       Pod @relation(fields: [podId], references: [id])
+  podId     String
   templateRef    String
   content        Json
   disclosure     DisclosureVersion @relation(fields: [disclosureVersionId], references: [id])
@@ -37,8 +37,8 @@ model LandingPageVersion {
 
 model DisclosureVersion {
   id         String    @id @default(uuid())
-  campaign   Campaign? @relation(fields: [campaignId], references: [id])
-  campaignId String?
+  pod   Pod? @relation(fields: [podId], references: [id])
+  podId String?
   hash       String
   text       String
   createdAt  DateTime  @default(now())
@@ -54,15 +54,15 @@ model Sponsor {
   termsUrl    String?
   deliveries  DeliveryAttempt[]
   suppressions Suppression[]
-  campaigns   CampaignSponsor[]
+  pods   PodSponsor[]
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
 }
 
-model CampaignSponsor {
+model PodSponsor {
   id         String   @id @default(uuid())
-  campaign   Campaign @relation(fields: [campaignId], references: [id])
-  campaignId String
+  pod   Pod @relation(fields: [podId], references: [id])
+  podId String
   sponsor    Sponsor  @relation(fields: [sponsorId], references: [id])
   sponsorId  String
   role       String   // primary, co-reg
@@ -72,8 +72,8 @@ model Lead {
   id                   String    @id @default(uuid())
   email                String
   name                 String?
-  campaign             Campaign  @relation(fields: [campaignId], references: [id])
-  campaignId           String
+  pod             Pod  @relation(fields: [podId], references: [id])
+  podId           String
   landingPageVersion   LandingPageVersion? @relation(fields: [landingPageVersionId], references: [id])
   landingPageVersionId String?
   disclosureVersion    DisclosureVersion?  @relation(fields: [disclosureVersionId], references: [id])

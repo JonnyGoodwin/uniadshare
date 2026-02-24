@@ -10,20 +10,20 @@ afterAll(async () => {
   await app.close();
 });
 
-describe('campaigns', () => {
-  it('creates a campaign and landing page version, then publishes it', async () => {
-    const createCampaign = await app.inject({
+describe('pods', () => {
+  it('creates a pod and landing page version, then publishes it', async () => {
+    const createPod = await app.inject({
       method: 'POST',
-      url: '/api/campaigns',
-      payload: { name: 'Test Campaign', subdomain: 'test' }
+      url: '/api/pods',
+      payload: { name: 'Test Pod', subdomain: 'test' }
     });
 
-    expect(createCampaign.statusCode).toBe(201);
-    const campaignId = createCampaign.json().campaign.id as string;
+    expect(createPod.statusCode).toBe(201);
+    const podId = createPod.json().pod.id as string;
 
     const createVersion = await app.inject({
       method: 'POST',
-      url: `/api/campaigns/${campaignId}/landing-versions`,
+      url: `/api/pods/${podId}/landing-versions`,
       payload: {
         templateRef: 'basic',
         content: {
@@ -41,7 +41,7 @@ describe('campaigns', () => {
 
     const publishVersion = await app.inject({
       method: 'POST',
-      url: `/api/campaigns/${campaignId}/landing-versions/${versionId}/publish`
+      url: `/api/pods/${podId}/landing-versions/${versionId}/publish`
     });
 
     expect(publishVersion.statusCode).toBe(200);
@@ -51,16 +51,16 @@ describe('campaigns', () => {
   });
 
   it('updates and deletes a sponsor', async () => {
-    const createCampaign = await app.inject({
+    const createPod = await app.inject({
       method: 'POST',
-      url: '/api/campaigns',
-      payload: { name: 'Sponsor Campaign', subdomain: 'sponsor-test' }
+      url: '/api/pods',
+      payload: { name: 'Sponsor Pod', subdomain: 'sponsor-test' }
     });
-    const campaignId = createCampaign.json().campaign.id as string;
+    const podId = createPod.json().pod.id as string;
 
     const sponsorRes = await app.inject({
       method: 'POST',
-      url: `/api/campaigns/${campaignId}/sponsors`,
+      url: `/api/pods/${podId}/sponsors`,
       payload: {
         name: 'Sponsor A',
         webhookEndpoint: 'https://example.com/webhook',
@@ -72,7 +72,7 @@ describe('campaigns', () => {
 
     const updateRes = await app.inject({
       method: 'PATCH',
-      url: `/api/campaigns/${campaignId}/sponsors/${sponsorId}`,
+      url: `/api/pods/${podId}/sponsors/${sponsorId}`,
       payload: { name: 'Sponsor A Updated' }
     });
     expect(updateRes.statusCode).toBe(200);
@@ -80,7 +80,7 @@ describe('campaigns', () => {
 
     const deleteRes = await app.inject({
       method: 'DELETE',
-      url: `/api/campaigns/${campaignId}/sponsors/${sponsorId}`
+      url: `/api/pods/${podId}/sponsors/${sponsorId}`
     });
     expect(deleteRes.statusCode).toBe(204);
   });

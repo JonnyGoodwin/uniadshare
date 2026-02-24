@@ -1,4 +1,4 @@
-import type { CampaignService } from './campaign-service.js';
+import type { PodService } from './pod-service.js';
 import type { DeliveryService } from './delivery-service.js';
 import type { DisclosureService } from './disclosure-service.js';
 import type { Lead, LeadInput, LeadRepository } from '../domain/lead.js';
@@ -8,7 +8,7 @@ export class LeadService {
     private readonly repo: LeadRepository,
     private readonly disclosureService: DisclosureService,
     private readonly deliveryService: DeliveryService,
-    private readonly campaignService: CampaignService
+    private readonly podService: PodService
   ) {}
 
   async ingest(lead: LeadInput): Promise<Lead> {
@@ -22,12 +22,12 @@ export class LeadService {
     }
 
     const stored = await this.repo.save({ ...lead, disclosureHash });
-    const sponsors = await this.campaignService.listSponsors(lead.campaignId);
+    const sponsors = await this.podService.listSponsors(lead.podId);
     await this.deliveryService.enqueueLead(stored, sponsors);
     return stored;
   }
 
-  async getConsentEvidence(email: string, campaignId?: string): Promise<Lead[]> {
-    return this.repo.findByEmail(email, campaignId);
+  async getConsentEvidence(email: string, podId?: string): Promise<Lead[]> {
+    return this.repo.findByEmail(email, podId);
   }
 }

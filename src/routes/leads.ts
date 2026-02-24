@@ -7,7 +7,7 @@ import type { LeadService } from '../services/lead-service.js';
 const leadSchema = z.object({
   email: z.string().email(),
   name: z.string().trim().min(1).optional(),
-  campaignId: z.string().min(1),
+  podId: z.string().min(1),
   landingPageVersionId: z.string().min(1).optional(),
   disclosureVersionId: z.string().min(1).optional(),
   consentedAt: z.coerce.date().optional(),
@@ -38,16 +38,19 @@ export function registerLeadRoutes(
       return reply.badRequest(message);
     }
 
-    const leadInput = parsed.data;
+    const leadInput = {
+      ...parsed.data,
+      podId: parsed.data.podId
+    };
     try {
       await disclosureService.assertExists(leadInput.disclosureVersionId);
       const storedLead = await leadService.ingest(leadInput);
 
-      app.log.info({ leadId: storedLead.id, campaignId: storedLead.campaignId }, 'Lead ingested');
+      app.log.info({ leadId: storedLead.id, podId: storedLead.podId }, 'Lead ingested');
 
       return reply.code(202).send({
         status: 'accepted',
-        lead: { id: storedLead.id, email: storedLead.email, campaignId: storedLead.campaignId }
+        lead: { id: storedLead.id, email: storedLead.email, podId: storedLead.podId }
       });
     } catch (err) {
       request.log.warn({ err }, 'Lead ingestion failed');

@@ -1,25 +1,25 @@
 import { randomUUID } from 'node:crypto';
 
 import type {
-  Campaign,
-  CampaignRepository,
-  CampaignSponsorLink,
-  CampaignSummary,
-  CreateCampaignInput,
+  Pod,
+  PodRepository,
+  PodSponsorLink,
+  PodSummary,
+  CreatePodInput,
   CreateLandingPageVersionInput,
   UpdateSponsorInput,
   LandingPageDetail,
   LandingPageVersion,
   AddSponsorInput
-} from '../../domain/campaign.js';
+} from '../../domain/pod.js';
 
-export class InMemoryCampaignRepository implements CampaignRepository {
-  private campaigns: Campaign[] = [];
+export class InMemoryPodRepository implements PodRepository {
+  private pods: Pod[] = [];
   private landingVersions: LandingPageVersion[] = [];
-  private sponsors: CampaignSponsorLink[] = [];
+  private sponsors: PodSponsorLink[] = [];
 
-  async createCampaign(input: CreateCampaignInput): Promise<Campaign> {
-    const campaign: Campaign = {
+  async createPod(input: CreatePodInput): Promise<Pod> {
+    const pod: Pod = {
       id: randomUUID(),
       name: input.name,
       subdomain: input.subdomain.toLowerCase(),
@@ -28,35 +28,35 @@ export class InMemoryCampaignRepository implements CampaignRepository {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    this.campaigns.push(campaign);
-    return campaign;
+    this.pods.push(pod);
+    return pod;
   }
 
   async createLandingPageVersion(input: CreateLandingPageVersionInput): Promise<LandingPageVersion> {
-    const campaign = this.campaigns.find((c) => c.id === input.campaignId);
-    if (!campaign) {
-      throw new Error('Campaign not found');
+    const pod = this.pods.find((c) => c.id === input.podId);
+    if (!pod) {
+      throw new Error('Pod not found');
     }
 
     const normalizedSlug = input.slug?.trim().toLowerCase() || undefined;
-    const hasRoot = Boolean(campaign.currentVersionId);
+    const hasRoot = Boolean(pod.currentVersionId);
     if (hasRoot && !normalizedSlug) {
       throw new Error('slug is required for non-root landing pages');
     }
 
     if (normalizedSlug) {
       const duplicate = this.landingVersions.find(
-        (v) => v.campaignId === input.campaignId && v.slug?.toLowerCase() === normalizedSlug
+        (v) => v.podId === input.podId && v.slug?.toLowerCase() === normalizedSlug
       );
       if (duplicate) {
-        throw new Error('slug already exists for campaign');
+        throw new Error('slug already exists for pod');
       }
     }
 
     const shouldAutoPublish = input.autoPublish !== false;
     const version: LandingPageVersion = {
       id: randomUUID(),
-      campaignId: input.campaignId,
+      podId: input.podId,
       slug: normalizedSlug ?? null,
       templateRef: input.templateRef,
       content: input.content,
@@ -68,95 +68,95 @@ export class InMemoryCampaignRepository implements CampaignRepository {
     this.landingVersions.push(version);
 
     if (shouldAutoPublish) {
-      if (!campaign.currentVersionId) {
-        campaign.currentVersionId = version.id;
+      if (!pod.currentVersionId) {
+        pod.currentVersionId = version.id;
       }
-      campaign.status = 'active';
-      campaign.updatedAt = new Date();
+      pod.status = 'active';
+      pod.updatedAt = new Date();
     }
 
     return version;
   }
 
-  async publishLandingPageVersion(campaignId: string, versionId: string): Promise<LandingPageVersion> {
+  async publishLandingPageVersion(podId: string, versionId: string): Promise<LandingPageVersion> {
     const version = this.landingVersions.find(
-      (v) => v.id === versionId && v.campaignId === campaignId
+      (v) => v.id === versionId && v.podId === podId
     );
     if (!version) {
-      throw new Error('Landing page version not found for campaign');
+      throw new Error('Landing page version not found for pod');
     }
 
     version.status = 'published';
     version.publishedAt = new Date();
     version.createdAt = version.createdAt ?? new Date();
 
-    const campaign = this.campaigns.find((c) => c.id === campaignId);
-    if (campaign) {
-      campaign.currentVersionId = version.id;
-      campaign.status = 'active';
-      campaign.updatedAt = new Date();
+    const pod = this.pods.find((c) => c.id === podId);
+    if (pod) {
+      pod.currentVersionId = version.id;
+      pod.status = 'active';
+      pod.updatedAt = new Date();
     }
 
     return version;
   }
 
-  async findCampaignById(id: string): Promise<Campaign | null> {
-    return this.campaigns.find((c) => c.id === id) ?? null;
+  async findPodById(id: string): Promise<Pod | null> {
+    return this.pods.find((c) => c.id === id) ?? null;
   }
 
-  async findCampaignBySubdomain(subdomain: string): Promise<Campaign | null> {
-    return this.campaigns.find((c) => c.subdomain === subdomain.toLowerCase()) ?? null;
+  async findPodBySubdomain(subdomain: string): Promise<Pod | null> {
+    return this.pods.find((c) => c.subdomain === subdomain.toLowerCase()) ?? null;
   }
 
   async findLandingPageVersion(
-    campaignId: string,
+    podId: string,
     versionId: string
   ): Promise<LandingPageDetail | null> {
     const version = this.landingVersions.find(
-      (v) => v.id === versionId && v.campaignId === campaignId
+      (v) => v.id === versionId && v.podId === podId
     );
-    const campaign = this.campaigns.find((c) => c.id === campaignId);
-    if (!version || !campaign) return null;
-    return { ...version, campaign };
+    const pod = this.pods.find((c) => c.id === podId);
+    if (!version || !pod) return null;
+    return { ...version, pod };
   }
 
   async findPublishedLandingBySubdomain(subdomain: string): Promise<LandingPageDetail | null> {
-    const campaign = await this.findCampaignBySubdomain(subdomain);
-    if (!campaign?.currentVersionId) return null;
-    const version = this.landingVersions.find((v) => v.id === campaign.currentVersionId);
+    const pod = await this.findPodBySubdomain(subdomain);
+    if (!pod?.currentVersionId) return null;
+    const version = this.landingVersions.find((v) => v.id === pod.currentVersionId);
     if (!version) return null;
-    return { ...version, campaign };
+    return { ...version, pod };
   }
 
   async findPublishedLandingBySubdomainAndSlug(
     subdomain: string,
     slug: string
   ): Promise<LandingPageDetail | null> {
-    const campaign = await this.findCampaignBySubdomain(subdomain);
-    if (!campaign) return null;
+    const pod = await this.findPodBySubdomain(subdomain);
+    if (!pod) return null;
     const normalizedSlug = slug.toLowerCase();
     const version = this.landingVersions.find(
       (v) =>
-        v.campaignId === campaign.id &&
+        v.podId === pod.id &&
         v.status === 'published' &&
         v.slug?.toLowerCase() === normalizedSlug
     );
     if (!version) return null;
-    return { ...version, campaign };
+    return { ...version, pod };
   }
 
-  async findLatestLandingVersion(campaignId: string): Promise<LandingPageDetail | null> {
+  async findLatestLandingVersion(podId: string): Promise<LandingPageDetail | null> {
     const versions = this.landingVersions
-      .filter((v) => v.campaignId === campaignId)
+      .filter((v) => v.podId === podId)
       .sort((a, b) => (b.createdAt?.getTime?.() ?? 0) - (a.createdAt?.getTime?.() ?? 0));
     const version = versions[0];
     if (!version) return null;
-    const campaign = this.campaigns.find((c) => c.id === campaignId);
-    return campaign ? { ...version, campaign } : null;
+    const pod = this.pods.find((c) => c.id === podId);
+    return pod ? { ...version, pod } : null;
   }
 
-  async listCampaigns(): Promise<CampaignSummary[]> {
-    return this.campaigns.map((c) => ({
+  async listPods(): Promise<PodSummary[]> {
+    return this.pods.map((c) => ({
       id: c.id,
       name: c.name,
       subdomain: c.subdomain,
@@ -167,19 +167,19 @@ export class InMemoryCampaignRepository implements CampaignRepository {
     }));
   }
 
-  async listLandingVersions(campaignId: string): Promise<LandingPageDetail[]> {
-    const campaign = this.campaigns.find((c) => c.id === campaignId);
-    if (!campaign) return [];
+  async listLandingVersions(podId: string): Promise<LandingPageDetail[]> {
+    const pod = this.pods.find((c) => c.id === podId);
+    if (!pod) return [];
     return this.landingVersions
-      .filter((v) => v.campaignId === campaignId)
-      .map((v) => ({ ...v, campaign }))
+      .filter((v) => v.podId === podId)
+      .map((v) => ({ ...v, pod }))
       .sort(
         (a, b) => (b.createdAt?.getTime?.() ?? 0) - (a.createdAt?.getTime?.() ?? 0)
       );
   }
 
-  async addSponsor(campaignId: string, input: AddSponsorInput): Promise<CampaignSponsorLink> {
-    const sponsor: CampaignSponsorLink = {
+  async addSponsor(podId: string, input: AddSponsorInput): Promise<PodSponsorLink> {
+    const sponsor: PodSponsorLink = {
       sponsorId: randomUUID(),
       name: input.name,
       webhookEndpoint: input.webhookEndpoint,
@@ -191,23 +191,23 @@ export class InMemoryCampaignRepository implements CampaignRepository {
     return sponsor;
   }
 
-  async listSponsors(): Promise<CampaignSponsorLink[]> {
-    // In this in-memory model, sponsors are not keyed by campaign; return all for now.
+  async listSponsors(): Promise<PodSponsorLink[]> {
+    // In this in-memory model, sponsors are not keyed by pod; return all for now.
     return this.sponsors;
   }
 
   async updateSponsor(
-    _campaignId: string,
+    _podId: string,
     sponsorId: string,
     input: UpdateSponsorInput
-  ): Promise<CampaignSponsorLink> {
+  ): Promise<PodSponsorLink> {
     const sponsor = this.sponsors.find((s) => s.sponsorId === sponsorId);
     if (!sponsor) throw new Error('Not found');
     Object.assign(sponsor, input);
     return sponsor;
   }
 
-  async removeSponsor(_campaignId: string, sponsorId: string): Promise<void> {
+  async removeSponsor(_podId: string, sponsorId: string): Promise<void> {
     this.sponsors = this.sponsors.filter((s) => s.sponsorId !== sponsorId);
   }
 }

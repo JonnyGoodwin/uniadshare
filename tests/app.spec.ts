@@ -25,7 +25,7 @@ describe('lead intake', () => {
       url: '/api/leads',
       payload: {
         email: 'test@example.com',
-        campaignId: 'cmp_123',
+        podId: 'cmp_123',
         landingPageVersionId: 'lpv_1',
         metadata: {
           utmSource: 'google',
@@ -38,7 +38,7 @@ describe('lead intake', () => {
     const body = response.json();
     expect(body.status).toBe('accepted');
     expect(body.lead.email).toBe('test@example.com');
-    expect(body.lead.campaignId).toBe('cmp_123');
+    expect(body.lead.podId).toBe('cmp_123');
     expect(body.lead.id).toBeTruthy();
   });
 
@@ -48,7 +48,7 @@ describe('lead intake', () => {
       url: '/api/leads',
       payload: {
         email: 'not-an-email',
-        campaignId: ''
+        podId: ''
       }
     });
 
@@ -61,7 +61,7 @@ describe('lead intake', () => {
       url: '/api/leads',
       payload: {
         email: 'consent@example.com',
-        campaignId: 'cmp_consent'
+        podId: 'cmp_consent'
       }
     });
 

@@ -3,13 +3,13 @@ import { afterAll, describe, expect, it } from 'vitest';
 
 import { buildApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
-import { InMemoryCampaignRepository } from '../src/infra/memory/campaign-repo.js';
+import { InMemoryPodRepository } from '../src/infra/memory/pod-repo.js';
 import { InMemoryDeliveryQueue } from '../src/infra/memory/delivery-queue.js';
 import { InMemoryDisclosureRepository } from '../src/infra/memory/disclosure-repo.js';
 import { InMemoryLeadRepository } from '../src/infra/memory/lead-repo.js';
 import { InMemorySuppressionService } from '../src/infra/memory/suppression-service.js';
 import { InMemoryWebhookAdapter } from '../src/infra/memory/webhook-adapter.js';
-import { CampaignService } from '../src/services/campaign-service.js';
+import { PodService } from '../src/services/pod-service.js';
 import { DeliveryService } from '../src/services/delivery-service.js';
 import { DisclosureService } from '../src/services/disclosure-service.js';
 import { LeadService } from '../src/services/lead-service.js';
@@ -21,7 +21,7 @@ const suppressionService = new InMemorySuppressionService();
 const webhookAdapter = new InMemoryWebhookAdapter();
 const disclosureRepo = new InMemoryDisclosureRepository();
 const disclosureService = new DisclosureService(disclosureRepo);
-const campaignService = new CampaignService(new InMemoryCampaignRepository(), disclosureService);
+const podService = new PodService(new InMemoryPodRepository(), disclosureService);
 const deliveryService = new DeliveryService(
   deliveryQueue,
   suppressionService,
@@ -29,11 +29,11 @@ const deliveryService = new DeliveryService(
   env.WEBHOOK_DEFAULT_ENDPOINT
 );
 const leadRepo = new InMemoryLeadRepository();
-const leadService = new LeadService(leadRepo, disclosureService, deliveryService, campaignService);
+const leadService = new LeadService(leadRepo, disclosureService, deliveryService, podService);
 
 const app = buildApp(env, {
   leadService,
-  campaignService,
+  podService,
   disclosureService,
   deliveryService
 });
@@ -46,14 +46,14 @@ describe('delivery pipeline', () => {
   it('stores disclosure hash on lead and enqueues delivery', async () => {
     const campaignRes = await app.inject({
       method: 'POST',
-      url: '/api/campaigns',
-      payload: { name: 'Delivery Campaign', subdomain: 'deliver' }
+      url: '/api/pods',
+      payload: { name: 'Delivery Pod', subdomain: 'deliver' }
     });
-    const campaignId = campaignRes.json().campaign.id as string;
+    const podId = campaignRes.json().pod.id as string;
 
     const disclosureRes = await app.inject({
       method: 'POST',
-      url: `/api/campaigns/${campaignId}/disclosures`,
+      url: `/api/pods/${podId}/disclosures`,
       payload: { text: 'Disclosure text for hashing' }
     });
     const disclosureId = disclosureRes.json().disclosure.id as string;
@@ -64,7 +64,7 @@ describe('delivery pipeline', () => {
       url: '/api/leads',
       payload: {
         email: 'queue@example.com',
-        campaignId,
+        podId,
         disclosureVersionId: disclosureId
       }
     });
@@ -91,7 +91,7 @@ describe('delivery pipeline', () => {
       url: '/api/leads',
       payload: {
         email: 'suppressed@example.com',
-        campaignId: 'cmp_suppressed'
+        podId: 'cmp_suppressed'
       }
     });
     expect(leadRes.statusCode).toBe(202);

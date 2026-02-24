@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '../components/Badge';
 import { Button, Card, TextInput } from '../components/Form';
 import { api } from '../lib/api';
-import type { CampaignSummary, LandingPageVersion, LandingTemplate, Sponsor } from '../lib/api';
+import type { PodSummary, LandingPageVersion, LandingTemplate, Sponsor } from '../lib/api';
 
 type PartnerForm = {
   name: string;
@@ -28,12 +28,12 @@ const defaultPartner: PartnerForm = {
 
 const stepTitles = ['Pod Information', 'Create Initial Offer', 'Disclosure'];
 
-export function CampaignsPage() {
-  const [campaigns, setCampaigns] = useState<CampaignSummary[]>([]);
+export function PodsPage() {
+  const [pods, setPods] = useState<PodSummary[]>([]);
   const [templates, setTemplates] = useState<LandingTemplate[]>([]);
-  const [selectedCampaignId, setSelectedCampaignId] = useState<string>('');
-  const [selectedCampaign, setSelectedCampaign] = useState<{
-    campaign: CampaignSummary;
+  const [selectedPodId, setSelectedPodId] = useState<string>('');
+  const [selectedPod, setSelectedPod] = useState<{
+    pod: PodSummary;
     sponsors: Sponsor[];
     landingPageVersions: LandingPageVersion[];
   } | null>(null);
@@ -129,8 +129,8 @@ export function CampaignsPage() {
 
   useEffect(() => {
     api
-      .listCampaigns()
-      .then((res) => setCampaigns(res.campaigns))
+      .listPods()
+      .then((res) => setPods(res.pods))
       .catch((err) => setError(err.message));
 
     api
@@ -145,12 +145,12 @@ export function CampaignsPage() {
   }, []);
 
   useEffect(() => {
-    if (!selectedCampaignId) return;
+    if (!selectedPodId) return;
     api
-      .getCampaign(selectedCampaignId)
-      .then((res) => setSelectedCampaign(res))
+      .getPod(selectedPodId)
+      .then((res) => setSelectedPod(res))
       .catch((err) => setError(err.message));
-  }, [selectedCampaignId]);
+  }, [selectedPodId]);
 
   function validateStep(currentStep: number): string | null {
     if (currentStep === 0) {
@@ -227,49 +227,49 @@ export function CampaignsPage() {
     setMessage(null);
 
     try {
-      const createdCampaign = await api.createCampaign({
+      const createdPod = await api.createPod({
         name: wizard.podName.trim(),
         subdomain: wizard.subdomain.trim().toLowerCase()
       });
 
-      const campaignId = createdCampaign.campaign.id;
+      const podId = createdPod.pod.id;
 
-      await api.createSponsor(campaignId, {
+      await api.createSponsor(podId, {
         name: wizard.primaryPartner.name.trim(),
         webhookEndpoint: normalizeWebhookEndpoint(wizard.primaryPartner.webhookEndpoint),
         role: 'primary'
       });
 
-      await api.createSponsor(campaignId, {
+      await api.createSponsor(podId, {
         name: wizard.sponsor1.name.trim(),
         webhookEndpoint: normalizeWebhookEndpoint(wizard.sponsor1.webhookEndpoint),
         role: 'co-reg'
       });
 
-      await api.createSponsor(campaignId, {
+      await api.createSponsor(podId, {
         name: wizard.sponsor2.name.trim(),
         webhookEndpoint: normalizeWebhookEndpoint(wizard.sponsor2.webhookEndpoint),
         role: 'co-reg'
       });
 
-      const disclosure = await api.createDisclosure(campaignId, wizard.disclosureText.trim());
+      const disclosure = await api.createDisclosure(podId, wizard.disclosureText.trim());
 
       const content: Record<string, string> = {};
       for (const field of activeTemplate.fields) {
         content[field.key] = wizard.templateContent[field.key] ?? '';
       }
 
-      await api.createLandingVersion(campaignId, {
+      await api.createLandingVersion(podId, {
         templateRef: wizard.templateRef,
         content,
         disclosureVersionId: disclosure.disclosure.id
       });
 
-      const refreshed = await api.listCampaigns();
-      setCampaigns(refreshed.campaigns);
+      const refreshed = await api.listPods();
+      setPods(refreshed.pods);
       setMode('list');
-      setSelectedCampaignId(campaignId);
-      setMessage(`Created campaign ${campaignId}`);
+      setSelectedPodId(podId);
+      setMessage(`Created pod ${podId}`);
       resetWizard(wizard.templateRef);
     } catch (err) {
       setError((err as Error).message);
@@ -281,7 +281,7 @@ export function CampaignsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Campaigns</h1>
+        <h1 className="text-2xl font-semibold">Pods</h1>
         {mode === 'list' ? (
           <Button
             onClick={() => {
@@ -291,7 +291,7 @@ export function CampaignsPage() {
               resetWizard(wizard.templateRef);
             }}
           >
-            Create New Campaign
+            Create New Pod
           </Button>
         ) : (
           <Button
@@ -301,13 +301,13 @@ export function CampaignsPage() {
               setError(null);
             }}
           >
-            Back to Campaigns
+            Back to Pods
           </Button>
         )}
       </div>
 
       {mode === 'create' ? (
-        <Card title="New Campaign Wizard">
+        <Card title="New Pod Wizard">
           <div className="space-y-5">
             <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4">
               <div className="mt-4 hidden md:block">
@@ -569,42 +569,42 @@ export function CampaignsPage() {
                 </Button>
               ) : (
                 <Button onClick={completeWizard} disabled={submitting}>
-                  {submitting ? 'Creating...' : 'Create Campaign'}
+                  {submitting ? 'Creating...' : 'Create Pod'}
                 </Button>
               )}
             </div>
           </div>
         </Card>
       ) : (
-        <Card title="Campaign List">
+        <Card title="Pod List">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
             <div className="space-y-2">
-              {campaigns.map((campaign) => (
+              {pods.map((pod) => (
                 <button
-                  key={campaign.id}
+                  key={pod.id}
                   className={`w-full rounded border px-3 py-2 text-left ${
-                    selectedCampaignId === campaign.id ? 'border-indigo-600 bg-indigo-50' : 'border-slate-200 bg-white'
+                    selectedPodId === pod.id ? 'border-indigo-600 bg-indigo-50' : 'border-slate-200 bg-white'
                   }`}
-                  onClick={() => setSelectedCampaignId(campaign.id)}
+                  onClick={() => setSelectedPodId(pod.id)}
                 >
-                  <div className="font-semibold">{campaign.name}</div>
-                  <div className="text-xs text-slate-500">{campaign.subdomain}</div>
-                  <div className="text-xs text-slate-500 capitalize">Status: {campaign.status}</div>
+                  <div className="font-semibold">{pod.name}</div>
+                  <div className="text-xs text-slate-500">{pod.subdomain}</div>
+                  <div className="text-xs text-slate-500 capitalize">Status: {pod.status}</div>
                 </button>
               ))}
-              {campaigns.length === 0 && <p className="text-sm text-slate-500">No campaigns yet.</p>}
+              {pods.length === 0 && <p className="text-sm text-slate-500">No pods yet.</p>}
             </div>
 
             <div className="lg:col-span-2">
-              {selectedCampaign ? (
+              {selectedPod ? (
                 <div className="space-y-3">
                   <div>
-                    <div className="text-lg font-semibold">{selectedCampaign.campaign.name}</div>
+                    <div className="text-lg font-semibold">{selectedPod.pod.name}</div>
                     <div className="text-sm text-slate-600 flex items-center gap-2">
-                      <span>{selectedCampaign.campaign.subdomain}</span>
-                      <Badge>{selectedCampaign.campaign.status}</Badge>
+                      <span>{selectedPod.pod.subdomain}</span>
+                      <Badge>{selectedPod.pod.status}</Badge>
                       <a
-                        href={getLandingPreviewHref(selectedCampaign.campaign.subdomain)}
+                        href={getLandingPreviewHref(selectedPod.pod.subdomain)}
                         target="_blank"
                         rel="noreferrer"
                         className="text-xs font-semibold text-indigo-700 hover:underline"
@@ -617,7 +617,7 @@ export function CampaignsPage() {
                   <div>
                     <div className="text-sm font-semibold">Landing Versions</div>
                     <div className="space-y-2 mt-2">
-                      {selectedCampaign.landingPageVersions.map((version) => (
+                      {selectedPod.landingPageVersions.map((version) => (
                         <div key={version.id} className="rounded border border-slate-200 px-3 py-2 bg-white">
                           <div className="flex items-center justify-between">
                             <div className="font-semibold">{version.id}</div>
@@ -630,7 +630,7 @@ export function CampaignsPage() {
                           </div>
                           <div className="mt-2 flex items-center gap-3">
                             <a
-                              href={getLandingPreviewHref(selectedCampaign.campaign.subdomain, version)}
+                              href={getLandingPreviewHref(selectedPod.pod.subdomain, version)}
                               target="_blank"
                               rel="noreferrer"
                               className="text-xs font-semibold text-indigo-700 hover:underline"
@@ -640,14 +640,14 @@ export function CampaignsPage() {
                           </div>
                         </div>
                       ))}
-                      {selectedCampaign.landingPageVersions.length === 0 && (
+                      {selectedPod.landingPageVersions.length === 0 && (
                         <p className="text-sm text-slate-500">No versions yet.</p>
                       )}
                     </div>
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-slate-500">Select a campaign to view details.</p>
+                <p className="text-sm text-slate-500">Select a pod to view details.</p>
               )}
             </div>
           </div>

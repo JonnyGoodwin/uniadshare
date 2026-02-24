@@ -3,17 +3,17 @@
 
 Wildcard DNS: *.yourdomain.com → your app
 
-Host-based routing: subdomain → Campaign/LP
+Host-based routing: subdomain → Pod/LP
 
 Template-based page builder (start with 1–3 templates)
 
 Draft/preview/publish + versioning
 
-## 2) Form + disclosure (must be configurable per campaign)
+## 2) Form + disclosure (must be configurable per pod)
 
 Email capture form (optionally first name)
 
-A required consent checkbox (or equivalent consent mechanism) with campaign-specific text
+A required consent checkbox (or equivalent consent mechanism) with pod-specific text
 
 Disclosure block on the lander that clearly states:
 
@@ -33,7 +33,7 @@ Email
 
 Timestamp
 
-Campaign + page version
+Pod + page version
 
 Disclosure text version/hash
 
@@ -81,7 +81,7 @@ Metered counts are based on successful deliveries (net of suppression + bounces 
 
 ## 6) Reporting (minimum)
 
-Per sponsor + campaign:
+Per sponsor + pod:
 
 Total opt-ins generated
 

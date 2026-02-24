@@ -13,7 +13,7 @@ export type LeadMetadata = {
 export type LeadInput = {
   email: string;
   name?: string;
-  campaignId: string;
+  podId: string;
   landingPageVersionId?: string;
   disclosureVersionId?: string;
   consentedAt?: Date;
@@ -28,5 +28,5 @@ export type Lead = LeadInput & {
 
 export interface LeadRepository {
   save(lead: LeadInput): Promise<Lead>;
-  findByEmail(email: string, campaignId?: string): Promise<Lead[]>;
+  findByEmail(email: string, podId?: string): Promise<Lead[]>;
 }

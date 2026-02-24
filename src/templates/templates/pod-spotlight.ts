@@ -25,7 +25,7 @@ export const podSpotlightTemplate: LandingTemplateModule = {
       label: 'Benefit 1',
       type: 'text',
       required: true,
-      placeholder: 'Case studies from real campaigns'
+      placeholder: 'Case studies from real pods'
     },
     {
       key: 'benefit2',
@@ -66,7 +66,7 @@ export const podSpotlightTemplate: LandingTemplateModule = {
   defaultContent: {
     headline: 'The acquisition pod for modern growth teams',
     subheadline: 'Learn what is working right now from high-performing operators.',
-    benefit1: 'Actionable campaign breakdowns',
+    benefit1: 'Actionable pod breakdowns',
     benefit2: 'Creative and copy examples every week',
     benefit3: 'Partner offers and sponsor opportunities',
     ctaLabel: 'Subscribe Now',

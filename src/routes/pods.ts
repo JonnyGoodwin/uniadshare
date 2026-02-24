@@ -1,11 +1,11 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 
-import type { CampaignService } from '../services/campaign-service.js';
+import type { PodService } from '../services/pod-service.js';
 import type { DisclosureService } from '../services/disclosure-service.js';
 import { validateTemplateContent } from '../templates/catalog.js';
 
-const createCampaignSchema = z.object({
+const createPodSchema = z.object({
   name: z.string().min(1),
   subdomain: z.string().min(1)
 });
@@ -34,31 +34,31 @@ const updateSponsorSchema = addSponsorSchema.partial().extend({
   webhookEndpoint: z.string().url().optional(),
   role: z.string().min(1).optional()
 });
-const sponsorParams = z.object({ campaignId: z.string().min(1), sponsorId: z.string().min(1) });
+const sponsorParams = z.object({ podId: z.string().min(1), sponsorId: z.string().min(1) });
 
-export function registerCampaignRoutes(
+export function registerPodRoutes(
   app: FastifyInstance,
-  campaignService: CampaignService,
+  podService: PodService,
   disclosureService: DisclosureService
 ): void {
-  app.get('/api/campaigns', async (_request, reply) => {
-    const campaigns = await campaignService.listCampaigns();
-    return reply.send({ campaigns });
+  app.get('/api/pods', async (_request, reply) => {
+    const pods = await podService.listPods();
+    return reply.send({ pods });
   });
 
-  app.post('/api/campaigns', async (request, reply) => {
-    const parsed = createCampaignSchema.safeParse(request.body);
+  app.post('/api/pods', async (request, reply) => {
+    const parsed = createPodSchema.safeParse(request.body);
     if (!parsed.success) {
       const message = parsed.error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');
       return reply.badRequest(message);
     }
 
-    const campaign = await campaignService.createCampaign(parsed.data);
-    return reply.code(201).send({ campaign });
+    const pod = await podService.createPod(parsed.data);
+    return reply.code(201).send({ pod });
   });
 
-  app.post('/api/campaigns/:campaignId/landing-versions', async (request, reply) => {
-    const params = z.object({ campaignId: z.string().min(1) }).safeParse(request.params);
+  app.post('/api/pods/:podId/landing-versions', async (request, reply) => {
+    const params = z.object({ podId: z.string().min(1) }).safeParse(request.params);
     const body = createLandingVersionSchema.safeParse(request.body);
     if (!params.success || !body.success) {
       const errors = [
@@ -83,8 +83,8 @@ export function registerCampaignRoutes(
     }
 
     try {
-      const version = await campaignService.createLandingPageVersion({
-        campaignId: params.data.campaignId,
+      const version = await podService.createLandingPageVersion({
+        podId: params.data.podId,
         ...body.data,
         autoPublish: true
       });
@@ -97,10 +97,10 @@ export function registerCampaignRoutes(
   });
 
   app.post(
-    '/api/campaigns/:campaignId/landing-versions/:versionId/publish',
+    '/api/pods/:podId/landing-versions/:versionId/publish',
     async (request, reply) => {
       const params = z
-        .object({ campaignId: z.string().min(1), versionId: z.string().min(1) })
+        .object({ podId: z.string().min(1), versionId: z.string().min(1) })
         .safeParse(request.params);
       if (!params.success) {
         const message = params.error.errors
@@ -110,20 +110,20 @@ export function registerCampaignRoutes(
       }
 
       try {
-        const published = await campaignService.publishLandingPageVersion(
-          params.data.campaignId,
+        const published = await podService.publishLandingPageVersion(
+          params.data.podId,
           params.data.versionId
         );
         return reply.code(200).send({ landingPageVersion: published });
       } catch (err) {
         request.log.error({ err }, 'Failed to publish landing page version');
-        return reply.notFound('Landing page version not found for campaign');
+        return reply.notFound('Landing page version not found for pod');
       }
     }
   );
 
-  app.post('/api/campaigns/:campaignId/sponsors', async (request, reply) => {
-    const params = z.object({ campaignId: z.string().min(1) }).safeParse(request.params);
+  app.post('/api/pods/:podId/sponsors', async (request, reply) => {
+    const params = z.object({ podId: z.string().min(1) }).safeParse(request.params);
     const body = addSponsorSchema.safeParse(request.body);
     if (!params.success || !body.success) {
       const errors = [
@@ -134,22 +134,22 @@ export function registerCampaignRoutes(
       return reply.badRequest(message);
     }
 
-    const sponsor = await campaignService.addSponsor(params.data.campaignId, body.data);
+    const sponsor = await podService.addSponsor(params.data.podId, body.data);
     return reply.code(201).send({ sponsor });
   });
 
-  app.get('/api/campaigns/:campaignId/sponsors', async (request, reply) => {
-    const params = z.object({ campaignId: z.string().min(1) }).safeParse(request.params);
+  app.get('/api/pods/:podId/sponsors', async (request, reply) => {
+    const params = z.object({ podId: z.string().min(1) }).safeParse(request.params);
     if (!params.success) {
       const message = params.error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');
       return reply.badRequest(message);
     }
 
-    const sponsors = await campaignService.listSponsors(params.data.campaignId);
+    const sponsors = await podService.listSponsors(params.data.podId);
     return reply.send({ sponsors });
   });
 
-  app.patch('/api/campaigns/:campaignId/sponsors/:sponsorId', async (request, reply) => {
+  app.patch('/api/pods/:podId/sponsors/:sponsorId', async (request, reply) => {
     const params = sponsorParams.safeParse(request.params);
     const body = updateSponsorSchema.safeParse(request.body);
     if (!params.success || !body.success) {
@@ -162,19 +162,19 @@ export function registerCampaignRoutes(
     }
 
     try {
-      const sponsor = await campaignService.updateSponsor(
-        params.data.campaignId,
+      const sponsor = await podService.updateSponsor(
+        params.data.podId,
         params.data.sponsorId,
         body.data
       );
       return reply.send({ sponsor });
     } catch (err) {
       request.log.warn({ err }, 'Failed to update sponsor');
-      return reply.notFound('Sponsor not found for campaign');
+      return reply.notFound('Sponsor not found for pod');
     }
   });
 
-  app.delete('/api/campaigns/:campaignId/sponsors/:sponsorId', async (request, reply) => {
+  app.delete('/api/pods/:podId/sponsors/:sponsorId', async (request, reply) => {
     const params = sponsorParams.safeParse(request.params);
     if (!params.success) {
       const message = params.error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');
@@ -182,29 +182,29 @@ export function registerCampaignRoutes(
     }
 
     try {
-      await campaignService.removeSponsor(params.data.campaignId, params.data.sponsorId);
+      await podService.removeSponsor(params.data.podId, params.data.sponsorId);
       return reply.code(204).send();
     } catch (err) {
       request.log.warn({ err }, 'Failed to delete sponsor');
-      return reply.notFound('Sponsor not found for campaign');
+      return reply.notFound('Sponsor not found for pod');
     }
   });
 
-  app.get('/api/campaigns/:campaignId', async (request, reply) => {
-    const params = z.object({ campaignId: z.string().min(1) }).safeParse(request.params);
+  app.get('/api/pods/:podId', async (request, reply) => {
+    const params = z.object({ podId: z.string().min(1) }).safeParse(request.params);
     if (!params.success) {
       const message = params.error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');
       return reply.badRequest(message);
     }
 
-    const campaign = await campaignService.findById(params.data.campaignId);
-    if (!campaign) return reply.notFound('Campaign not found');
+    const pod = await podService.findById(params.data.podId);
+    if (!pod) return reply.notFound('Pod not found');
 
     const [sponsors, landingPageVersions] = await Promise.all([
-      campaignService.listSponsors(params.data.campaignId),
-      campaignService.listLandingVersions(params.data.campaignId)
+      podService.listSponsors(params.data.podId),
+      podService.listLandingVersions(params.data.podId)
     ]);
 
-    return reply.send({ campaign, sponsors, landingPageVersions });
+    return reply.send({ pod, sponsors, landingPageVersions });
   });
 }

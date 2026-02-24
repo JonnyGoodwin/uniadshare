@@ -11,8 +11,8 @@ export function registerDisclosureRoutes(
   app: FastifyInstance,
   disclosureService: DisclosureService
 ): void {
-  app.post('/api/campaigns/:campaignId/disclosures', async (request, reply) => {
-    const params = z.object({ campaignId: z.string().min(1) }).safeParse(request.params);
+  app.post('/api/pods/:podId/disclosures', async (request, reply) => {
+    const params = z.object({ podId: z.string().min(1) }).safeParse(request.params);
     const body = disclosureSchema.safeParse(request.body);
     if (!params.success || !body.success) {
       const errors = [
@@ -24,7 +24,7 @@ export function registerDisclosureRoutes(
     }
 
     const disclosure = await disclosureService.create({
-      campaignId: params.data.campaignId,
+      podId: params.data.podId,
       text: body.data.text
     });
 

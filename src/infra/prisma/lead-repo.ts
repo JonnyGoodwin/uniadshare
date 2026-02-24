@@ -7,7 +7,7 @@ export class PrismaLeadRepository implements LeadRepository {
       data: {
         email: input.email,
         name: input.name,
-        campaignId: input.campaignId,
+        podId: input.podId,
         landingPageVersionId: input.landingPageVersionId,
         disclosureVersionId: input.disclosureVersionId,
         consentedAt: input.consentedAt ?? new Date(),
@@ -28,7 +28,7 @@ export class PrismaLeadRepository implements LeadRepository {
       id: record.id,
       email: record.email,
       name: record.name ?? undefined,
-      campaignId: record.campaignId,
+      podId: record.podId,
       landingPageVersionId: record.landingPageVersionId,
       disclosureVersionId: record.disclosureVersionId,
       disclosureHash: record.disclosureHash ?? undefined,
@@ -38,11 +38,11 @@ export class PrismaLeadRepository implements LeadRepository {
     };
   }
 
-  async findByEmail(email: string, campaignId?: string): Promise<Lead[]> {
+  async findByEmail(email: string, podId?: string): Promise<Lead[]> {
     const leads = await prisma.lead.findMany({
       where: {
         email: email.toLowerCase(),
-        ...(campaignId ? { campaignId } : {})
+        ...(podId ? { podId } : {})
       },
       include: {
         disclosureVersion: true,
@@ -54,7 +54,7 @@ export class PrismaLeadRepository implements LeadRepository {
       id: record.id,
       email: record.email,
       name: record.name ?? undefined,
-      campaignId: record.campaignId,
+      podId: record.podId,
       landingPageVersionId: record.landingPageVersionId ?? undefined,
       disclosureVersionId: record.disclosureVersionId ?? undefined,
       disclosureHash: record.disclosureHash ?? undefined,

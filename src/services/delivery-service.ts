@@ -64,7 +64,7 @@ export class DeliveryService {
         lead: {
           id: lead.id,
           email: lead.email,
-          campaignId: lead.campaignId,
+          podId: lead.podId,
           landingPageVersionId: lead.landingPageVersionId,
           disclosureVersionId: lead.disclosureVersionId,
           disclosureHash: lead.disclosureHash,

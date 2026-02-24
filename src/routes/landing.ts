@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import { z } from 'zod';
 
-import type { CampaignService } from '../services/campaign-service.js';
+import type { PodService } from '../services/pod-service.js';
 import { renderLandingPage } from '../templates/render.js';
 
 const landingParamsSchema = z.object({
@@ -28,18 +28,18 @@ function extractSubdomain(host: string | undefined, baseDomain?: string): string
   return subdomain;
 }
 
-export function registerLandingRoutes(app: FastifyInstance, campaignService: CampaignService): void {
+export function registerLandingRoutes(app: FastifyInstance, podService: PodService): void {
   async function resolveLandingBySubdomain(
     subdomain: string,
     query: { versionId?: string; draft?: boolean }
   ) {
     if (query.versionId) {
-      return campaignService.getLandingVersionBySubdomain(subdomain, query.versionId);
+      return podService.getLandingVersionBySubdomain(subdomain, query.versionId);
     }
     if (query.draft) {
-      return campaignService.getLatestLandingVersion(subdomain);
+      return podService.getLatestLandingVersion(subdomain);
     }
-    return campaignService.getPublishedLandingBySubdomain(subdomain);
+    return podService.getPublishedLandingBySubdomain(subdomain);
   }
 
   async function sendLandingHtml(
@@ -48,7 +48,7 @@ export function registerLandingRoutes(app: FastifyInstance, campaignService: Cam
       templateRef: string;
       content: Record<string, unknown>;
       disclosure?: { text: string } | null;
-      campaignId: string;
+      podId: string;
       id: string;
       disclosureVersionId?: string | null;
     }
@@ -58,7 +58,7 @@ export function registerLandingRoutes(app: FastifyInstance, campaignService: Cam
       landing.content,
       landing.disclosure?.text ?? undefined,
       {
-        campaignId: landing.campaignId,
+        podId: landing.podId,
         landingPageVersionId: landing.id,
         disclosureVersionId: landing.disclosureVersionId
       }
@@ -90,7 +90,7 @@ export function registerLandingRoutes(app: FastifyInstance, campaignService: Cam
 
     // In a future step, render template; currently return structured data for SSR/SPA consumption.
     return {
-      campaign: landing.campaign,
+      pod: landing.pod,
       landingPageVersion: {
         id: landing.id,
         templateRef: landing.templateRef,
@@ -168,7 +168,7 @@ export function registerLandingRoutes(app: FastifyInstance, campaignService: Cam
       return reply.notFound('Subdomain not found');
     }
 
-    const landing = await campaignService.getPublishedLandingBySubdomainAndSlug(
+    const landing = await podService.getPublishedLandingBySubdomainAndSlug(
       subdomain,
       slugParams.data.slug
     );

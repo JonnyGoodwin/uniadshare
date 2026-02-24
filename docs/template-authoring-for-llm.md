@@ -6,7 +6,7 @@ Use this guide when adding a new landing page template for Acquisition Pods.
 
 Create a new template that:
 
-- appears in the campaign wizard template picker,
+- appears in the pod wizard template picker,
 - validates required fields on landing creation,
 - renders HTML on preview and live landing routes,
 - supports lead form submission via existing shared form/script helpers.
@@ -103,10 +103,10 @@ export const myTemplate: LandingTemplateModule = {
 3. `cd frontend && npm run build`
 4. In UI:
 
-- Open `/` (campaigns page).
-- Start `Create New Campaign`.
+- Open `/` (pods page).
+- Start `Create New Pod`.
 - Confirm new template appears in Step 2.
-- Create a campaign and verify preview renders HTML for the new template.
+- Create a pod and verify preview renders HTML for the new template.
 - Submit lead form from preview and confirm API accepts lead (`202`).
 
 ## Common mistakes

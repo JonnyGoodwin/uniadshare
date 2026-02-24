@@ -17,7 +17,7 @@ export type LandingTemplateDefinition = {
 };
 
 export type TemplateContext = {
-  campaignId: string;
+  podId: string;
   landingPageVersionId: string;
   disclosureVersionId?: string | null;
 };

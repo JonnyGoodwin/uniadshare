@@ -30,7 +30,7 @@ Landing-page and consent ledger requirements live in `info.md`. This repo now in
 - `docs/` — user/developer docs; add integration notes and API contracts here.
 - `infra/` — CI/CD, IaC, and operational configs as they are added.
 - `AGENTS.md` — contributor guide with coding, testing, and PR expectations.
-- `prisma/` — data model for campaigns, landing pages, disclosures, leads, sponsors, deliveries, suppressions.
+- `prisma/` — data model for pods, landing pages, disclosures, leads, sponsors, deliveries, suppressions.
 - `docs/architecture.md` — system flow and component overview.
 - `docs/integrations.md` — webhook payloads, retry rules, and admin headers.
 
@@ -43,17 +43,17 @@ Landing-page and consent ledger requirements live in `info.md`. This repo now in
 - Swagger UI is available at `/docs` when the server runs.
 - Env extras: `BASE_DOMAIN` enables host-based landing routing (subdomain selection), `WEBHOOK_DEFAULT_ENDPOINT` sets the delivery target for webhook adapter, `ADMIN_API_KEY` protects admin endpoints.
 - New endpoints:
-  - `POST /api/campaigns` → create campaign (name, subdomain).
-  - `POST /api/campaigns/:campaignId/landing-versions` → create a draft landing page version (templateRef, content, optional disclosureVersionId).
-  - `POST /api/campaigns/:campaignId/landing-versions/:versionId/publish` → publish a version and set it as the campaign’s current version.
-  - `POST /api/campaigns/:campaignId/disclosures` → create a disclosure version (hash stored automatically).
-  - `GET /api/landing/:subdomain` → fetch published landing data for rendering (campaign current version); add `?versionId=...` to preview a specific draft.
+  - `POST /api/pods` → create pod (name, subdomain).
+  - `POST /api/pods/:podId/landing-versions` → create a draft landing page version (templateRef, content, optional disclosureVersionId).
+  - `POST /api/pods/:podId/landing-versions/:versionId/publish` → publish a version and set it as the pod's current version.
+  - `POST /api/pods/:podId/disclosures` → create a disclosure version (hash stored automatically).
+  - `GET /api/landing/:subdomain` → fetch published landing data for rendering (pod current version); add `?versionId=...` to preview a specific draft.
   - `GET /api/landing/:subdomain?draft=true` → fetch latest draft for preview.
   - `GET /` (host-based) → render HTML for the published landing when `BASE_DOMAIN` matches the Host header’s domain.
   - Example: with `BASE_DOMAIN=localhost:3000`, visit `http://subdomain.localhost:3000/`.
-  - `POST /api/campaigns/:campaignId/sponsors` → add sponsor with webhook endpoint/role.
-  - `GET /api/campaigns/:campaignId/sponsors` → list sponsors for a campaign.
-  - `PATCH/DELETE /api/campaigns/:campaignId/sponsors/:sponsorId` → update/remove a sponsor.
+  - `POST /api/pods/:podId/sponsors` → add sponsor with webhook endpoint/role.
+  - `GET /api/pods/:podId/sponsors` → list sponsors for a pod.
+  - `PATCH/DELETE /api/pods/:podId/sponsors/:sponsorId` → update/remove a sponsor.
   - `GET /api/deliveries` → list delivery attempts (filterable by leadId/sponsorId).
-  - `GET /api/consent` → admin consent evidence lookup (`email` required, optional `campaignId`).
-  - `POST /api/leads` → intake lead (email, campaignId, optional landingPageVersionId/disclosureVersionId + metadata).
+  - `GET /api/consent` → admin consent evidence lookup (`email` required, optional `podId`).
+  - `POST /api/leads` → intake lead (email, podId, optional landingPageVersionId/disclosureVersionId + metadata).

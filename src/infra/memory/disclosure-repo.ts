@@ -8,7 +8,7 @@ export class InMemoryDisclosureRepository implements DisclosureRepository {
   async create(input: DisclosureInput, hash: string): Promise<DisclosureVersion> {
     const disclosure: DisclosureVersion = {
       id: randomUUID(),
-      campaignId: input.campaignId ?? null,
+      podId: input.podId ?? null,
       text: input.text,
       hash,
       createdAt: new Date()
