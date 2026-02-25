@@ -157,22 +157,22 @@ export function PodsPage() {
       if (!wizard.podName.trim()) return 'Pod Name is required';
       if (!wizard.subdomain.trim()) return 'Subdomain is required';
       if (!wizard.primaryPartner.name.trim() || !wizard.primaryPartner.webhookEndpoint.trim()) {
-        return 'Primary Partner name and webhook endpoint are required';
+        return 'Sponsor name and webhook endpoint are required';
       }
       if (!isValidUrl(normalizeWebhookEndpoint(wizard.primaryPartner.webhookEndpoint))) {
-        return 'Primary Partner webhook endpoint must be a valid URL';
+        return 'Sponsor webhook endpoint must be a valid URL';
       }
       if (!wizard.sponsor1.name.trim() || !wizard.sponsor1.webhookEndpoint.trim()) {
-        return 'Sponsor 1 name and webhook endpoint are required';
+        return 'Partner 1 name and webhook endpoint are required';
       }
       if (!isValidUrl(normalizeWebhookEndpoint(wizard.sponsor1.webhookEndpoint))) {
-        return 'Sponsor 1 webhook endpoint must be a valid URL';
+        return 'Partner 1 webhook endpoint must be a valid URL';
       }
       if (!wizard.sponsor2.name.trim() || !wizard.sponsor2.webhookEndpoint.trim()) {
-        return 'Sponsor 2 name and webhook endpoint are required';
+        return 'Partner 2 name and webhook endpoint are required';
       }
       if (!isValidUrl(normalizeWebhookEndpoint(wizard.sponsor2.webhookEndpoint))) {
-        return 'Sponsor 2 webhook endpoint must be a valid URL';
+        return 'Partner 2 webhook endpoint must be a valid URL';
       }
       return null;
     }
@@ -391,7 +391,7 @@ export function PodsPage() {
                   <div className="text-sm font-semibold text-slate-700 mb-2">Pod Partners</div>
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                     <div className="rounded border border-slate-200 p-3">
-                      <div className="mb-2 text-sm font-semibold">Primary Partner</div>
+                      <div className="mb-2 text-sm font-semibold">Sponsor</div>
                       <TextInput
                         label="Name"
                         value={wizard.primaryPartner.name}
@@ -416,7 +416,7 @@ export function PodsPage() {
                     </div>
 
                     <div className="rounded border border-slate-200 p-3">
-                      <div className="mb-2 text-sm font-semibold">Sponsor 1</div>
+                      <div className="mb-2 text-sm font-semibold">Partner 1</div>
                       <TextInput
                         label="Name"
                         value={wizard.sponsor1.name}
@@ -441,7 +441,7 @@ export function PodsPage() {
                     </div>
 
                     <div className="rounded border border-slate-200 p-3">
-                      <div className="mb-2 text-sm font-semibold">Sponsor 2</div>
+                      <div className="mb-2 text-sm font-semibold">Partner 2</div>
                       <TextInput
                         label="Name"
                         value={wizard.sponsor2.name}
@@ -551,7 +551,7 @@ export function PodsPage() {
                       disclosureText: event.target.value
                     }))
                   }
-                  placeholder="Primary publisher and co-reg details..."
+                  placeholder="Offer and co-registration details..."
                 />
                 <p className="text-xs text-slate-500">
                   Disclosure is required and will be linked to the initial landing page.
