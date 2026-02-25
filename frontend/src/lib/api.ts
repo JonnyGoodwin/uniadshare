@@ -41,7 +41,7 @@ export type Delivery = {
 export type LandingTemplateField = {
   key: string;
   label: string;
-  type: 'text' | 'textarea';
+  type: 'text' | 'textarea' | 'image' | 'color';
   required?: boolean;
   placeholder?: string;
 };

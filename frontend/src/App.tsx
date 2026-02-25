@@ -1,7 +1,7 @@
 import { Outlet, RouterProvider, createBrowserRouter, NavLink } from 'react-router-dom';
 
-import { PodsPage } from './pages/Pods';
 import { DeliveriesPage } from './pages/Deliveries';
+import { PodsPage } from './pages/Pods';
 import { SponsorsPage } from './pages/Sponsors';
 
   const router = createBrowserRouter([

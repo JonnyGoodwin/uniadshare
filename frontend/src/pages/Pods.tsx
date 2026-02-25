@@ -60,6 +60,20 @@ export function PodsPage() {
 
   const apiBase = import.meta.env.VITE_API_BASE;
 
+  function setTemplateFieldValue(key: string, value: string) {
+    setWizard((prev) => ({
+      ...prev,
+      templateContent: {
+        ...prev.templateContent,
+        [key]: value
+      }
+    }));
+  }
+
+  function getColorInputValue(value: string): string {
+    return /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(value) ? value : '#000000';
+  }
+
   function normalizeWebhookEndpoint(input: string): string {
     const trimmed = input.trim();
     if (!trimmed) return '';
@@ -497,44 +511,60 @@ export function PodsPage() {
                 {activeTemplate && (
                   <div className="rounded border border-slate-200 p-4 space-y-3">
                     <div className="text-sm font-semibold">Customize {activeTemplate.name}</div>
-                    {activeTemplate.fields.map((field) =>
-                      field.type === 'textarea' ? (
-                        <label key={field.key} className="block text-sm font-medium text-slate-700 mb-1">
-                          {field.label}
-                          <textarea
-                            className="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm"
-                            rows={4}
-                            value={wizard.templateContent[field.key] ?? ''}
-                            onChange={(event) =>
-                              setWizard((prev) => ({
-                                ...prev,
-                                templateContent: {
-                                  ...prev.templateContent,
-                                  [field.key]: event.target.value
-                                }
-                              }))
-                            }
-                            placeholder={field.placeholder}
-                          />
-                        </label>
-                      ) : (
+                    {activeTemplate.fields.map((field) => {
+                      const value = wizard.templateContent[field.key] ?? '';
+                      if (field.type === 'textarea') {
+                        return (
+                          <label key={field.key} className="block text-sm font-medium text-slate-700 mb-1">
+                            {field.label}
+                            <textarea
+                              className="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                              rows={4}
+                              value={value}
+                              onChange={(event) => setTemplateFieldValue(field.key, event.target.value)}
+                              placeholder={field.placeholder}
+                            />
+                          </label>
+                        );
+                      }
+
+                      if (field.type === 'color') {
+                        return (
+                          <label key={field.key} className="block text-sm font-medium text-slate-700 mb-2">
+                            <span className="block mb-1">{field.label}</span>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                className="h-10 w-14 cursor-pointer rounded border border-slate-300 bg-white p-1"
+                                value={getColorInputValue(value)}
+                                onChange={(event) => setTemplateFieldValue(field.key, event.target.value)}
+                              />
+                              <input
+                                type="text"
+                                className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                                value={value}
+                                onChange={(event) => setTemplateFieldValue(field.key, event.target.value)}
+                                placeholder={field.placeholder ?? '#000000'}
+                              />
+                            </div>
+                          </label>
+                        );
+                      }
+
+                      return (
                         <TextInput
                           key={field.key}
+                          type={field.type === 'image' ? 'url' : 'text'}
                           label={field.label}
-                          value={wizard.templateContent[field.key] ?? ''}
-                          onChange={(event) =>
-                            setWizard((prev) => ({
-                              ...prev,
-                              templateContent: {
-                                ...prev.templateContent,
-                                [field.key]: event.target.value
-                              }
-                            }))
+                          value={value}
+                          onChange={(event) => setTemplateFieldValue(field.key, event.target.value)}
+                          placeholder={
+                            field.placeholder ??
+                            (field.type === 'image' ? 'https://example.com/image.png' : undefined)
                           }
-                          placeholder={field.placeholder}
                         />
-                      )
-                    )}
+                      );
+                    })}
                   </div>
                 )}
               </div>

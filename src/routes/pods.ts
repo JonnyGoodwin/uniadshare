@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 
-import type { PodService } from '../services/pod-service.js';
 import type { DisclosureService } from '../services/disclosure-service.js';
+import type { PodService } from '../services/pod-service.js';
 import { validateTemplateContent } from '../templates/catalog.js';
 
 const createPodSchema = z.object({

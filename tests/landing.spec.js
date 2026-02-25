@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, it } from 'vitest';
+
 import { buildApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
 const env = loadEnv({ NODE_ENV: 'test', PORT: '3001', BASE_DOMAIN: 'example.com' });

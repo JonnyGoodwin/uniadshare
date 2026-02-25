@@ -1,20 +1,20 @@
 import type { Env } from './config/env.js';
-import { InMemoryPodRepository } from './infra/memory/pod-repo.js';
 import { InMemoryDeliveryQueue } from './infra/memory/delivery-queue.js';
 import { InMemoryDisclosureRepository } from './infra/memory/disclosure-repo.js';
 import { InMemoryLeadRepository } from './infra/memory/lead-repo.js';
+import { InMemoryPodRepository } from './infra/memory/pod-repo.js';
 import { InMemorySuppressionService } from './infra/memory/suppression-service.js';
 import { InMemoryWebhookAdapter } from './infra/memory/webhook-adapter.js';
-import { PrismaPodRepository } from './infra/prisma/pod-repo.js';
 import { PrismaDeliveryQueue } from './infra/prisma/delivery-queue.js';
 import { PrismaDisclosureRepository } from './infra/prisma/disclosure-repo.js';
 import { PrismaLeadRepository } from './infra/prisma/lead-repo.js';
+import { PrismaPodRepository } from './infra/prisma/pod-repo.js';
 import { PrismaSuppressionService } from './infra/prisma/suppression-service.js';
 import { FetchWebhookAdapter } from './infra/webhook/fetch-adapter.js';
-import { PodService } from './services/pod-service.js';
 import { DeliveryService } from './services/delivery-service.js';
 import { DisclosureService } from './services/disclosure-service.js';
 import { LeadService } from './services/lead-service.js';
+import { PodService } from './services/pod-service.js';
 
 export type Dependencies = {
   leadService: LeadService;

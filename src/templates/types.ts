@@ -1,4 +1,4 @@
-export type TemplateFieldType = 'text' | 'textarea';
+export type TemplateFieldType = 'text' | 'textarea' | 'image' | 'color';
 
 export type TemplateField = {
   key: string;

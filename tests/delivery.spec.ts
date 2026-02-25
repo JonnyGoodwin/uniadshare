@@ -3,16 +3,16 @@ import { afterAll, describe, expect, it } from 'vitest';
 
 import { buildApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
-import { InMemoryPodRepository } from '../src/infra/memory/pod-repo.js';
 import { InMemoryDeliveryQueue } from '../src/infra/memory/delivery-queue.js';
 import { InMemoryDisclosureRepository } from '../src/infra/memory/disclosure-repo.js';
 import { InMemoryLeadRepository } from '../src/infra/memory/lead-repo.js';
+import { InMemoryPodRepository } from '../src/infra/memory/pod-repo.js';
 import { InMemorySuppressionService } from '../src/infra/memory/suppression-service.js';
 import { InMemoryWebhookAdapter } from '../src/infra/memory/webhook-adapter.js';
-import { PodService } from '../src/services/pod-service.js';
 import { DeliveryService } from '../src/services/delivery-service.js';
 import { DisclosureService } from '../src/services/disclosure-service.js';
 import { LeadService } from '../src/services/lead-service.js';
+import { PodService } from '../src/services/pod-service.js';
 
 const env = loadEnv({ NODE_ENV: 'test', PORT: '3001', BASE_DOMAIN: 'example.com' });
 
