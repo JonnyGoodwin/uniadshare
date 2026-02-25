@@ -1,16 +1,18 @@
 import { basicTemplate } from './templates/basic.js';
-import { leadsContentToolkitTemplate } from './templates/leads-content-toolkit.js';
+import { toolkitTemplate } from './templates/leads-content-toolkit.js';
 import { podSpotlightTemplate } from './templates/pod-spotlight.js';
 import type { LandingTemplateModule } from './types.js';
 
 export const landingTemplateModules: LandingTemplateModule[] = [
   basicTemplate,
   podSpotlightTemplate,
-  leadsContentToolkitTemplate
+  toolkitTemplate
 ];
 
 const byRef = new Map(landingTemplateModules.map((template) => [template.ref, template]));
+const legacyRefAliases = new Map<string, string>([['leads-content-toolkit', 'toolkit']]);
 
 export function getLandingTemplateModule(ref: string): LandingTemplateModule | undefined {
-  return byRef.get(ref);
+  const canonicalRef = legacyRefAliases.get(ref) ?? ref;
+  return byRef.get(canonicalRef);
 }

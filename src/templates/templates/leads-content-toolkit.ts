@@ -1,9 +1,9 @@
 import type { LandingTemplateModule } from '../types.js';
 import { escapeHtml, renderLeadCaptureScript, renderLeadForm } from '../utils.js';
 
-export const leadsContentToolkitTemplate: LandingTemplateModule = {
-  ref: 'leads-content-toolkit',
-  name: 'Leads + Content Toolkit',
+export const toolkitTemplate: LandingTemplateModule = {
+  ref: 'toolkit',
+  name: 'toolkit',
   description: 'Resource-style page with toolkit bullets and a focused capture panel.',
   fields: [
     {
@@ -18,7 +18,7 @@ export const leadsContentToolkitTemplate: LandingTemplateModule = {
       label: 'Headline',
       type: 'text',
       required: true,
-      placeholder: 'Get the Leads + Content Toolkit'
+      placeholder: 'Get the Toolkit'
     },
     {
       key: 'subheadline',
@@ -121,7 +121,7 @@ export const leadsContentToolkitTemplate: LandingTemplateModule = {
   ],
   defaultContent: {
     eyebrow: 'Free Resource Bundle',
-    headline: 'Get the Leads + Content Toolkit',
+    headline: 'Get the Toolkit',
     subheadline:
       'Steal the exact playbooks, prompts, and templates used to turn attention into subscribers and subscribers into revenue.',
     includesTitle: "What's included",
@@ -140,7 +140,7 @@ export const leadsContentToolkitTemplate: LandingTemplateModule = {
   },
   render: ({ content, disclosureText, context }) => {
     const eyebrow = escapeHtml(content.eyebrow ?? 'Free Resource Bundle');
-    const headline = escapeHtml(content.headline ?? 'Get the Leads + Content Toolkit');
+    const headline = escapeHtml(content.headline ?? 'Get the Toolkit');
     const subheadline = escapeHtml(content.subheadline ?? '');
     const includesTitle = escapeHtml(content.includesTitle ?? "What's included");
     const asset1 = escapeHtml(content.asset1 ?? '');
