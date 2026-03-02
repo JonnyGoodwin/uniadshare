@@ -11,10 +11,14 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
+    "start:railway": "npm run prisma:migrate:deploy && npm run start",
     "test": "vitest run tests/*.spec.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "check": "npm run lint && npm run test"
+    "check": "npm run lint && npm run test",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@fastify/cors": "^8.5.0",

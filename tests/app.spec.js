@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import { loginAsAdmin, testAdminEnv } from './admin-auth.js';
 import { buildApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';

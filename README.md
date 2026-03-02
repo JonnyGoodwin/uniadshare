@@ -41,6 +41,10 @@ Landing-page and consent ledger requirements live in `info.md`. This repo now in
 - Without a `DATABASE_URL`, the API uses an in-memory lead repository for local/dev; set `DATABASE_URL` to persist leads in Postgres.
 - Swagger UI is available at `/docs` when the server runs.
 - Env extras: `BASE_DOMAIN` enables host-based landing routing (subdomain selection), `WEBHOOK_DEFAULT_ENDPOINT` sets the delivery target for webhook adapter.
+- Production DB workflow:
+  - Create migration files locally with `npm run prisma:migrate:dev -- --name <change-name>`.
+  - Commit `prisma/migrations/**` to git.
+  - Apply committed migrations in production with `npm run prisma:migrate:deploy`.
 - Admin auth env:
   - `ADMIN_EMAIL` and `ADMIN_PASSWORD` are required to log into the admin app.
   - `AUTH_SESSION_SECRET` signs admin session tokens (use a long random value in production).
@@ -60,3 +64,15 @@ Landing-page and consent ledger requirements live in `info.md`. This repo now in
   - `GET /api/deliveries` → list delivery attempts (filterable by leadId/sponsorId).
   - `GET /api/consent` → admin consent evidence lookup (`email` required, optional `podId`).
   - `POST /api/leads` → intake lead (email, podId, optional landingPageVersionId/disclosureVersionId + metadata).
+
+## Railway deployment (backend)
+- A `railway.json` file is included and uses `npm run start:railway` as deploy start command.
+- `start:railway` runs `prisma migrate deploy` before starting Fastify, so schema changes are applied on deploy.
+- Required Railway environment variables:
+  - `DATABASE_URL` (from Railway Postgres service)
+  - `NODE_ENV=production`
+  - `PORT` (Railway injects this; keep default behavior)
+  - `BASE_DOMAIN` (your production domain, if using host-based lander routing)
+  - `WEBHOOK_DEFAULT_ENDPOINT` (recommended for delivery fanout)
+  - `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `AUTH_SESSION_SECRET` (required for admin auth in prod)
+- Full runbook: `docs/runbooks/railway-production.md`
