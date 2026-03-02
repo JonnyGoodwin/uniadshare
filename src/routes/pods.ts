@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 
+import { requireAdminAuth } from '../auth/guard.js';
 import type { DisclosureService } from '../services/disclosure-service.js';
 import type { PodService } from '../services/pod-service.js';
 import { validateTemplateContent } from '../templates/catalog.js';
@@ -41,12 +42,12 @@ export function registerPodRoutes(
   podService: PodService,
   disclosureService: DisclosureService
 ): void {
-  app.get('/api/pods', async (_request, reply) => {
+  app.get('/api/pods', { preHandler: requireAdminAuth }, async (_request, reply) => {
     const pods = await podService.listPods();
     return reply.send({ pods });
   });
 
-  app.post('/api/pods', async (request, reply) => {
+  app.post('/api/pods', { preHandler: requireAdminAuth }, async (request, reply) => {
     const parsed = createPodSchema.safeParse(request.body);
     if (!parsed.success) {
       const message = parsed.error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');
@@ -57,7 +58,7 @@ export function registerPodRoutes(
     return reply.code(201).send({ pod });
   });
 
-  app.post('/api/pods/:podId/landing-versions', async (request, reply) => {
+  app.post('/api/pods/:podId/landing-versions', { preHandler: requireAdminAuth }, async (request, reply) => {
     const params = z.object({ podId: z.string().min(1) }).safeParse(request.params);
     const body = createLandingVersionSchema.safeParse(request.body);
     if (!params.success || !body.success) {
@@ -98,6 +99,7 @@ export function registerPodRoutes(
 
   app.post(
     '/api/pods/:podId/landing-versions/:versionId/publish',
+    { preHandler: requireAdminAuth },
     async (request, reply) => {
       const params = z
         .object({ podId: z.string().min(1), versionId: z.string().min(1) })
@@ -122,7 +124,7 @@ export function registerPodRoutes(
     }
   );
 
-  app.post('/api/pods/:podId/sponsors', async (request, reply) => {
+  app.post('/api/pods/:podId/sponsors', { preHandler: requireAdminAuth }, async (request, reply) => {
     const params = z.object({ podId: z.string().min(1) }).safeParse(request.params);
     const body = addSponsorSchema.safeParse(request.body);
     if (!params.success || !body.success) {
@@ -138,7 +140,7 @@ export function registerPodRoutes(
     return reply.code(201).send({ sponsor });
   });
 
-  app.get('/api/pods/:podId/sponsors', async (request, reply) => {
+  app.get('/api/pods/:podId/sponsors', { preHandler: requireAdminAuth }, async (request, reply) => {
     const params = z.object({ podId: z.string().min(1) }).safeParse(request.params);
     if (!params.success) {
       const message = params.error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');
@@ -149,7 +151,7 @@ export function registerPodRoutes(
     return reply.send({ sponsors });
   });
 
-  app.patch('/api/pods/:podId/sponsors/:sponsorId', async (request, reply) => {
+  app.patch('/api/pods/:podId/sponsors/:sponsorId', { preHandler: requireAdminAuth }, async (request, reply) => {
     const params = sponsorParams.safeParse(request.params);
     const body = updateSponsorSchema.safeParse(request.body);
     if (!params.success || !body.success) {
@@ -174,7 +176,7 @@ export function registerPodRoutes(
     }
   });
 
-  app.delete('/api/pods/:podId/sponsors/:sponsorId', async (request, reply) => {
+  app.delete('/api/pods/:podId/sponsors/:sponsorId', { preHandler: requireAdminAuth }, async (request, reply) => {
     const params = sponsorParams.safeParse(request.params);
     if (!params.success) {
       const message = params.error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');
@@ -190,7 +192,7 @@ export function registerPodRoutes(
     }
   });
 
-  app.get('/api/pods/:podId', async (request, reply) => {
+  app.get('/api/pods/:podId', { preHandler: requireAdminAuth }, async (request, reply) => {
     const params = z.object({ podId: z.string().min(1) }).safeParse(request.params);
     if (!params.success) {
       const message = params.error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');

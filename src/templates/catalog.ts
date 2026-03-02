@@ -10,15 +10,13 @@ const templates: LandingTemplateDefinition[] = landingTemplateModules.map((templ
 }));
 
 const byRef = new Map(templates.map((template) => [template.ref, template]));
-const legacyRefAliases = new Map<string, string>([['leads-content-toolkit', 'toolkit']]);
 
 export function listLandingTemplates(): LandingTemplateDefinition[] {
   return templates;
 }
 
 export function getLandingTemplate(ref: string): LandingTemplateDefinition | undefined {
-  const canonicalRef = legacyRefAliases.get(ref) ?? ref;
-  return byRef.get(canonicalRef);
+  return byRef.get(ref);
 }
 
 export function normalizeTemplateContent(

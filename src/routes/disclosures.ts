@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 
+import { requireAdminAuth } from '../auth/guard.js';
 import type { DisclosureService } from '../services/disclosure-service.js';
 
 const disclosureSchema = z.object({
@@ -11,7 +12,7 @@ export function registerDisclosureRoutes(
   app: FastifyInstance,
   disclosureService: DisclosureService
 ): void {
-  app.post('/api/pods/:podId/disclosures', async (request, reply) => {
+  app.post('/api/pods/:podId/disclosures', { preHandler: requireAdminAuth }, async (request, reply) => {
     const params = z.object({ podId: z.string().min(1) }).safeParse(request.params);
     const body = disclosureSchema.safeParse(request.body);
     if (!params.success || !body.success) {

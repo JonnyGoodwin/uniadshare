@@ -6,7 +6,10 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url().optional(),
   BASE_DOMAIN: z.string().optional(),
   WEBHOOK_DEFAULT_ENDPOINT: z.string().url().optional(),
-  ADMIN_API_KEY: z.string().optional()
+  ADMIN_EMAIL: z.string().email().optional(),
+  ADMIN_PASSWORD: z.string().min(1).optional(),
+  AUTH_SESSION_SECRET: z.string().min(16).default('replace-this-dev-session-secret'),
+  AUTH_TOKEN_TTL_HOURS: z.coerce.number().int().positive().default(12)
 });
 
 export type Env = z.infer<typeof envSchema>;

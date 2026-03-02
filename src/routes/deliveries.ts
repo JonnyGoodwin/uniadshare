@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 
+import { requireAdminAuth } from '../auth/guard.js';
 import type { DeliveryService } from '../services/delivery-service.js';
 
 const querySchema = z.object({
@@ -9,14 +10,7 @@ const querySchema = z.object({
 });
 
 export function registerDeliveryRoutes(app: FastifyInstance, deliveryService: DeliveryService): void {
-  app.get('/api/deliveries', async (request, reply) => {
-    if (app.config.ADMIN_API_KEY) {
-      const headerKey = request.headers['x-admin-key'];
-      if (headerKey !== app.config.ADMIN_API_KEY) {
-        return reply.unauthorized('Invalid admin key');
-      }
-    }
-
+  app.get('/api/deliveries', { preHandler: requireAdminAuth }, async (request, reply) => {
     const parsed = querySchema.safeParse(request.query);
     if (!parsed.success) {
       const message = parsed.error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');

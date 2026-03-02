@@ -1,5 +1,5 @@
 const API_BASE = import.meta.env.VITE_API_BASE ?? '';
-const ADMIN_KEY = import.meta.env.VITE_ADMIN_KEY;
+let authToken: string | null = null;
 
 export type PodSummary = {
   id: string;
@@ -38,12 +38,22 @@ export type Delivery = {
   attempts?: Array<{ status: string; at?: string }>;
 };
 
+export type LandingTemplateFieldOption = {
+  label: string;
+  value: string;
+  previewFontFamily?: string;
+  googleFontQuery?: string;
+};
+
+export type GoogleFontOption = Required<LandingTemplateFieldOption>;
+
 export type LandingTemplateField = {
   key: string;
   label: string;
-  type: 'text' | 'textarea' | 'image' | 'color';
+  type: 'text' | 'textarea' | 'image' | 'color' | 'font';
   required?: boolean;
   placeholder?: string;
+  options?: LandingTemplateFieldOption[];
 };
 
 export type LandingTemplate = {
@@ -55,9 +65,10 @@ export type LandingTemplate = {
 };
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const headers: Record<string, string> = {
-    ...(ADMIN_KEY ? { 'x-admin-key': ADMIN_KEY } : {})
-  };
+  const headers: Record<string, string> = {};
+  if (authToken) {
+    headers.authorization = `Bearer ${authToken}`;
+  }
   if (options.body !== undefined) {
     headers['content-type'] = 'application/json';
   }
@@ -72,6 +83,9 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const text = await res.text();
     throw new Error(text || res.statusText);
   }
+  if (res.status === 204) {
+    return undefined as T;
+  }
   return res.json() as Promise<T>;
 }
 
@@ -84,6 +98,17 @@ export type SponsorPayload = {
 };
 
 export const api = {
+  setAuthToken: (token: string | null) => {
+    authToken = token;
+  },
+  login: (payload: { email: string; password: string }) =>
+    request<{ token: string; admin: { email: string } }>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    }),
+  me: () => request<{ admin: { email: string } }>('/api/auth/me'),
+  logout: () => request<void>('/api/auth/logout', { method: 'POST' }),
+
   listPods: () => request<{ pods: PodSummary[] }>('/api/pods'),
   getPod: (podId: string) =>
     request<{
@@ -139,6 +164,7 @@ export const api = {
 
   listDeliveries: () => request<{ deliveries: Delivery[] }>('/api/deliveries'),
   listTemplates: () => request<{ templates: LandingTemplate[] }>('/api/templates'),
+  listGoogleFonts: () => request<{ fonts: GoogleFontOption[] }>('/api/google-fonts'),
 
   fetchLanding: (subdomain: string, params: Record<string, string | boolean | undefined> = {}) => {
     const search = new URLSearchParams();

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import { afterAll, describe, expect, it } from 'vitest';
-
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { loginAsAdmin, testAdminEnv } from './admin-auth.js';
 import { buildApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
 import { InMemoryDeliveryQueue } from '../src/infra/memory/delivery-queue.js';
@@ -13,7 +13,7 @@ import { DeliveryService } from '../src/services/delivery-service.js';
 import { DisclosureService } from '../src/services/disclosure-service.js';
 import { LeadService } from '../src/services/lead-service.js';
 import { PodService } from '../src/services/pod-service.js';
-const env = loadEnv({ NODE_ENV: 'test', PORT: '3001', BASE_DOMAIN: 'example.com' });
+const env = loadEnv({ NODE_ENV: 'test', PORT: '3001', BASE_DOMAIN: 'example.com', ...testAdminEnv });
 const deliveryQueue = new InMemoryDeliveryQueue();
 const suppressionService = new InMemorySuppressionService();
 const webhookAdapter = new InMemoryWebhookAdapter();
@@ -29,6 +29,10 @@ const app = buildApp(env, {
     disclosureService,
     deliveryService
 });
+let adminHeaders;
+beforeAll(async () => {
+    adminHeaders = await loginAsAdmin(app);
+});
 afterAll(async () => {
     await app.close();
 });
@@ -37,12 +41,14 @@ describe('delivery pipeline', () => {
         const campaignRes = await app.inject({
             method: 'POST',
             url: '/api/pods',
+            headers: adminHeaders,
             payload: { name: 'Delivery Pod', subdomain: 'deliver' }
         });
         const podId = campaignRes.json().pod.id;
         const disclosureRes = await app.inject({
             method: 'POST',
             url: `/api/pods/${podId}/disclosures`,
+            headers: adminHeaders,
             payload: { text: 'Disclosure text for hashing' }
         });
         const disclosureId = disclosureRes.json().disclosure.id;
@@ -86,7 +92,8 @@ describe('delivery pipeline', () => {
     it('lists deliveries via API', async () => {
         const res = await app.inject({
             method: 'GET',
-            url: '/api/deliveries'
+            url: '/api/deliveries',
+            headers: adminHeaders
         });
         expect(res.statusCode).toBe(200);
         expect(res.json().deliveries.length).toBeGreaterThan(0);

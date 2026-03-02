@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Badge } from '../components/Badge';
 import { Button, Card, TextInput } from '../components/Form';
 import { api } from '../lib/api';
-import type { PodSummary, LandingPageVersion, LandingTemplate, Sponsor } from '../lib/api';
+import type { GoogleFontOption, PodSummary, LandingPageVersion, LandingTemplate, Sponsor } from '../lib/api';
 
 type PartnerForm = {
   name: string;
@@ -52,6 +52,8 @@ export function PodsPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [googleFonts, setGoogleFonts] = useState<GoogleFontOption[]>([]);
+  const loadedFontQueries = useRef<Set<string>>(new Set());
 
   const activeTemplate = useMemo(
     () => templates.find((template) => template.ref === wizard.templateRef) ?? null,
@@ -68,6 +70,33 @@ export function PodsPage() {
         [key]: value
       }
     }));
+  }
+
+  function ensureFontPreviewStylesheet(query?: string): void {
+    if (!query || loadedFontQueries.current.has(query)) {
+      return;
+    }
+
+    const href = `https://fonts.googleapis.com/css2?${query}&display=swap`;
+    const existingLink = document.head.querySelector(`link[data-font-preview-href="${href}"]`);
+    if (existingLink) {
+      loadedFontQueries.current.add(query);
+      return;
+    }
+
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    link.setAttribute('data-font-preview-href', href);
+    document.head.appendChild(link);
+    loadedFontQueries.current.add(query);
+  }
+
+  function resolveFontOptions(fieldOptions: GoogleFontOption[] | undefined): GoogleFontOption[] {
+    if (googleFonts.length > 0) {
+      return googleFonts;
+    }
+    return fieldOptions ?? [];
   }
 
   function getColorInputValue(value: string): string {
@@ -153,9 +182,26 @@ export function PodsPage() {
         setTemplates(res.templates);
         if (res.templates.length === 0) return;
         const preferred = res.templates.find((template) => template.ref === 'basic') ?? res.templates[0];
-        resetWizard(preferred.ref);
+        setWizard({
+          podName: '',
+          subdomain: '',
+          primaryPartner: { ...defaultPartner },
+          sponsor1: { ...defaultPartner },
+          sponsor2: { ...defaultPartner },
+          templateRef: preferred.ref,
+          templateContent: { ...preferred.defaultContent },
+          disclosureText: ''
+        });
+        setStep(0);
       })
       .catch((err) => setError(err.message));
+
+    api
+      .listGoogleFonts()
+      .then((res) => setGoogleFonts(res.fonts))
+      .catch(() => {
+        // Fall back to template-provided font options when metadata fetch fails.
+      });
   }, []);
 
   useEffect(() => {
@@ -547,6 +593,49 @@ export function PodsPage() {
                                 placeholder={field.placeholder ?? '#000000'}
                               />
                             </div>
+                          </label>
+                        );
+                      }
+
+                      if (field.type === 'font') {
+                        const options = resolveFontOptions(field.options as GoogleFontOption[] | undefined);
+                        const selectedOption = options.find((option) => option.value === value);
+                        const previewFontFamily =
+                          selectedOption?.previewFontFamily ?? `'${selectedOption?.value ?? value}', sans-serif`;
+
+                        return (
+                          <label key={field.key} className="block text-sm font-medium text-slate-700 mb-2">
+                            <span className="block mb-1">{field.label}</span>
+                            <select
+                              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                              value={value}
+                              style={{ fontFamily: previewFontFamily }}
+                              onChange={(event) => {
+                                const nextValue = event.target.value;
+                                const nextOption = options.find((option) => option.value === nextValue);
+                                ensureFontPreviewStylesheet(nextOption?.googleFontQuery);
+                                setTemplateFieldValue(field.key, nextValue);
+                              }}
+                            >
+                              {options.map((option) => (
+                                <option
+                                  key={option.value}
+                                  value={option.value}
+                                  style={{
+                                    fontFamily:
+                                      option.previewFontFamily ?? `'${option.value}', sans-serif`
+                                  }}
+                                >
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                            <p
+                              className="mt-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-base text-slate-700"
+                              style={{ fontFamily: previewFontFamily }}
+                            >
+                              The quick brown fox jumps over the lazy dog.
+                            </p>
                           </label>
                         );
                       }

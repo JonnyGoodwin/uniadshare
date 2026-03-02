@@ -1,10 +1,16 @@
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { loginAsAdmin, testAdminEnv } from './admin-auth.js';
 import { buildApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
 
-const env = loadEnv({ NODE_ENV: 'test', PORT: '3001' });
+const env = loadEnv({ NODE_ENV: 'test', PORT: '3001', ...testAdminEnv });
 const app = buildApp(env);
+let adminHeaders: Record<string, string>;
+
+beforeAll(async () => {
+  adminHeaders = await loginAsAdmin(app);
+});
 
 afterAll(async () => {
   await app.close();
@@ -15,6 +21,28 @@ describe('health', () => {
     const response = await app.inject({ method: 'GET', url: '/health' });
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({ status: 'ok' });
+  });
+});
+
+describe('admin auth', () => {
+  it('rejects protected endpoint without auth header', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/templates'
+    });
+    expect(response.statusCode).toBe(401);
+  });
+
+  it('rejects invalid login credentials', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      payload: {
+        email: testAdminEnv.ADMIN_EMAIL,
+        password: 'wrong-password'
+      }
+    });
+    expect(response.statusCode).toBe(401);
   });
 });
 
@@ -68,6 +96,7 @@ describe('lead intake', () => {
     const response = await app.inject({
       method: 'GET',
       url: '/api/consent',
+      headers: adminHeaders,
       query: { email: 'consent@example.com' }
     });
 

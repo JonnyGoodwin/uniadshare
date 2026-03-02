@@ -19,7 +19,6 @@ Landing-page and consent ledger requirements live in `info.md`. This repo now in
 - Run frontend: `npm run dev` (defaults to port 5173)
 - Frontend env lives in `frontend/.env`:
   - `VITE_API_BASE=http://localhost:3000`
-  - `VITE_ADMIN_KEY=...` (optional; match backend `ADMIN_API_KEY` if set)
 
 ## Project structure
 - `src/` — application code; Fastify server lives in `app.ts`, entry point in `index.ts`.
@@ -41,7 +40,11 @@ Landing-page and consent ledger requirements live in `info.md`. This repo now in
 - Prisma schema defined in `prisma/schema.prisma`; run `npx prisma generate` after installing dependencies to emit the client.
 - Without a `DATABASE_URL`, the API uses an in-memory lead repository for local/dev; set `DATABASE_URL` to persist leads in Postgres.
 - Swagger UI is available at `/docs` when the server runs.
-- Env extras: `BASE_DOMAIN` enables host-based landing routing (subdomain selection), `WEBHOOK_DEFAULT_ENDPOINT` sets the delivery target for webhook adapter, `ADMIN_API_KEY` protects admin endpoints.
+- Env extras: `BASE_DOMAIN` enables host-based landing routing (subdomain selection), `WEBHOOK_DEFAULT_ENDPOINT` sets the delivery target for webhook adapter.
+- Admin auth env:
+  - `ADMIN_EMAIL` and `ADMIN_PASSWORD` are required to log into the admin app.
+  - `AUTH_SESSION_SECRET` signs admin session tokens (use a long random value in production).
+  - `AUTH_TOKEN_TTL_HOURS` sets token lifetime (default `12`).
 - New endpoints:
   - `POST /api/pods` → create pod (name, subdomain).
   - `POST /api/pods/:podId/landing-versions` → create a draft landing page version (templateRef, content, optional disclosureVersionId).

@@ -1,10 +1,16 @@
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { loginAsAdmin, testAdminEnv } from './admin-auth.js';
 import { buildApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
 
-const env = loadEnv({ NODE_ENV: 'test', PORT: '3001' });
+const env = loadEnv({ NODE_ENV: 'test', PORT: '3001', ...testAdminEnv });
 const app = buildApp(env);
+let adminHeaders: Record<string, string>;
+
+beforeAll(async () => {
+  adminHeaders = await loginAsAdmin(app);
+});
 
 afterAll(async () => {
   await app.close();
@@ -15,6 +21,7 @@ describe('pods', () => {
     const createPod = await app.inject({
       method: 'POST',
       url: '/api/pods',
+      headers: adminHeaders,
       payload: { name: 'Test Pod', subdomain: 'test' }
     });
 
@@ -24,6 +31,7 @@ describe('pods', () => {
     const createVersion = await app.inject({
       method: 'POST',
       url: `/api/pods/${podId}/landing-versions`,
+      headers: adminHeaders,
       payload: {
         templateRef: 'basic',
         content: {
@@ -41,7 +49,8 @@ describe('pods', () => {
 
     const publishVersion = await app.inject({
       method: 'POST',
-      url: `/api/pods/${podId}/landing-versions/${versionId}/publish`
+      url: `/api/pods/${podId}/landing-versions/${versionId}/publish`,
+      headers: adminHeaders
     });
 
     expect(publishVersion.statusCode).toBe(200);
@@ -54,6 +63,7 @@ describe('pods', () => {
     const createPod = await app.inject({
       method: 'POST',
       url: '/api/pods',
+      headers: adminHeaders,
       payload: { name: 'Sponsor Pod', subdomain: 'sponsor-test' }
     });
     const podId = createPod.json().pod.id as string;
@@ -61,6 +71,7 @@ describe('pods', () => {
     const sponsorRes = await app.inject({
       method: 'POST',
       url: `/api/pods/${podId}/sponsors`,
+      headers: adminHeaders,
       payload: {
         name: 'Sponsor A',
         webhookEndpoint: 'https://example.com/webhook',
@@ -73,6 +84,7 @@ describe('pods', () => {
     const updateRes = await app.inject({
       method: 'PATCH',
       url: `/api/pods/${podId}/sponsors/${sponsorId}`,
+      headers: adminHeaders,
       payload: { name: 'Sponsor A Updated' }
     });
     expect(updateRes.statusCode).toBe(200);
@@ -80,7 +92,8 @@ describe('pods', () => {
 
     const deleteRes = await app.inject({
       method: 'DELETE',
-      url: `/api/pods/${podId}/sponsors/${sponsorId}`
+      url: `/api/pods/${podId}/sponsors/${sponsorId}`,
+      headers: adminHeaders
     });
     expect(deleteRes.statusCode).toBe(204);
   });

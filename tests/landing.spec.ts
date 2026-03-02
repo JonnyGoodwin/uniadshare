@@ -1,10 +1,16 @@
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { loginAsAdmin, testAdminEnv } from './admin-auth.js';
 import { buildApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
 
-const env = loadEnv({ NODE_ENV: 'test', PORT: '3001', BASE_DOMAIN: 'example.com' });
+const env = loadEnv({ NODE_ENV: 'test', PORT: '3001', BASE_DOMAIN: 'example.com', ...testAdminEnv });
 const app = buildApp(env);
+let adminHeaders: Record<string, string>;
+
+beforeAll(async () => {
+  adminHeaders = await loginAsAdmin(app);
+});
 
 afterAll(async () => {
   await app.close();
@@ -15,6 +21,7 @@ describe('landing retrieval and disclosures', () => {
     const campaignRes = await app.inject({
       method: 'POST',
       url: '/api/pods',
+      headers: adminHeaders,
       payload: { name: 'Landing Test', subdomain: 'lander' }
     });
     const podId = campaignRes.json().pod.id as string;
@@ -22,6 +29,7 @@ describe('landing retrieval and disclosures', () => {
     const disclosureRes = await app.inject({
       method: 'POST',
       url: `/api/pods/${podId}/disclosures`,
+      headers: adminHeaders,
       payload: { text: 'Primary publisher: Example; Co-reg: A, B' }
     });
     const disclosureId = disclosureRes.json().disclosure.id as string;
@@ -29,6 +37,7 @@ describe('landing retrieval and disclosures', () => {
     const versionRes = await app.inject({
       method: 'POST',
       url: `/api/pods/${podId}/landing-versions`,
+      headers: adminHeaders,
       payload: {
         templateRef: 'basic',
         content: {
@@ -45,7 +54,8 @@ describe('landing retrieval and disclosures', () => {
 
     await app.inject({
       method: 'POST',
-      url: `/api/pods/${podId}/landing-versions/${versionId}/publish`
+      url: `/api/pods/${podId}/landing-versions/${versionId}/publish`,
+      headers: adminHeaders
     });
 
     const publishedRes = await app.inject({

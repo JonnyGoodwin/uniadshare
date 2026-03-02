@@ -1,4 +1,11 @@
-export type TemplateFieldType = 'text' | 'textarea' | 'image' | 'color';
+export type TemplateFieldType = 'text' | 'textarea' | 'image' | 'color' | 'font';
+
+export type TemplateFieldOption = {
+  label: string;
+  value: string;
+  previewFontFamily?: string;
+  googleFontQuery?: string;
+};
 
 export type TemplateField = {
   key: string;
@@ -6,6 +13,7 @@ export type TemplateField = {
   type: TemplateFieldType;
   required?: boolean;
   placeholder?: string;
+  options?: TemplateFieldOption[];
 };
 
 export type LandingTemplateDefinition = {
