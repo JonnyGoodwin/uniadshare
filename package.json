@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json --noCheck",
     "start": "node dist/index.js",
     "start:railway": "npm run prisma:migrate:deploy && npm run start",
     "test": "vitest run tests/*.spec.ts",

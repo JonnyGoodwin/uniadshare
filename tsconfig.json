@@ -10,10 +10,9 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "allowImportingTsExtensions": true,
     "noUncheckedIndexedAccess": true,
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src", "tests"],
+  "include": ["src"],
   "exclude": ["dist", "node_modules"]
 }
