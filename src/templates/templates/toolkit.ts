@@ -138,7 +138,7 @@ export const toolkitTemplate: LandingTemplateModule = {
     consentLabel: 'I agree to receive emails from the publishers listed below.',
     successMessage: 'Success. Check your inbox for access details.'
   },
-  render: ({ content, disclosureText, context }) => {
+  render: ({ content, context }) => {
     const eyebrow = escapeHtml(content.eyebrow ?? 'Free Resource Bundle');
     const headline = escapeHtml(content.headline ?? 'Get the Toolkit');
     const subheadline = escapeHtml(content.subheadline ?? '');
@@ -382,7 +382,7 @@ export const toolkitTemplate: LandingTemplateModule = {
           <div class="capture">
             <h3>Instant Access</h3>
             <p>Enter your details and we will send the toolkit immediately.</p>
-            ${renderLeadForm(content, disclosureText)}
+            ${renderLeadForm(content)}
           </div>
         </aside>
       </div>

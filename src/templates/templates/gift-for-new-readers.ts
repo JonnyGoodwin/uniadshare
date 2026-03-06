@@ -189,7 +189,7 @@ export const giftForNewReadersTemplate: LandingTemplateModule = {
     successHeading: "You're in.",
     successMessage: 'Check your inbox — your first edition and partner offers are on their way.'
   },
-  render: ({ content, disclosureText, context }) => {
+  render: ({ content, context }) => {
     const logoImage = escapeHtml(content.logoImage ?? '');
     const logoName = escapeHtml(content.logoName ?? '');
     const headerFont = resolveGiftHeaderFont(content.headerFont);
@@ -212,7 +212,6 @@ export const giftForNewReadersTemplate: LandingTemplateModule = {
     const consentLabel = escapeHtml(content.consentLabel ?? 'I agree to receive emails from the publishers listed below.');
     const successHeading = escapeHtml(content.successHeading ?? 'Success');
     const successMessage = escapeHtml(content.successMessage ?? 'Thanks, your opt-in was received.');
-    const disclosure = escapeHtml(disclosureText ?? '');
 
     return `<!doctype html>
 <html lang="en">
@@ -343,34 +342,7 @@ export const giftForNewReadersTemplate: LandingTemplateModule = {
       .asset-bullet { margin-top: 7px; width: 5px; height: 5px; border-radius: 50%; background: var(--coral); justify-self: center; }
       .asset-text { font-family: var(--font-header); font-size: 1.0625rem; line-height: 1.55; color: var(--muted); }
       .asset-name { font-weight: 500; font-style: italic; color: var(--ink-mid); }
-      .consent { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 18px; }
-      .lead-form input[type='checkbox'] {
-        appearance: none;
-        -webkit-appearance: none;
-        width: 14px;
-        height: 14px;
-        min-width: 14px;
-        border: 1.5px solid var(--rule);
-        border-radius: 2px;
-        margin-top: 2px;
-        cursor: pointer;
-        background: var(--parchment);
-        transition: background 0.15s, border-color 0.15s;
-        position: relative;
-      }
-      .lead-form input[type='checkbox']:checked { background: var(--coral); border-color: var(--coral); }
-      .lead-form input[type='checkbox']:checked::after {
-        content: '';
-        position: absolute;
-        left: 3px;
-        top: 0;
-        width: 4px;
-        height: 8px;
-        border: 1.5px solid #fff;
-        border-top: none;
-        border-left: none;
-        transform: rotate(45deg);
-      }
+      .consent { margin-bottom: 18px; }
       .consent-text { font-size: 0.725rem; font-weight: 300; line-height: 1.65; color: var(--muted); letter-spacing: 0.01em; }
       .disclosure { margin-bottom: 30px; font-size: 0.7rem; color: var(--muted); line-height: 1.55; }
       .disclosure h2 { display: none; }
@@ -447,15 +419,7 @@ export const giftForNewReadersTemplate: LandingTemplateModule = {
             </div>
           </div>
 
-          <label class="consent a7">
-            <input id="lead-consent" name="consent" type="checkbox" required checked />
-            <span class="consent-text">${consentLabel}</span>
-          </label>
-
-          <section class="disclosure a7">
-            <h2>Disclosure</h2>
-            <p>${disclosure}</p>
-          </section>
+          <p class="consent consent-text a7">${consentLabel}</p>
 
           <p id="lead-status" aria-live="polite"></p>
         </form>

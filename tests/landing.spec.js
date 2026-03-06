@@ -74,7 +74,6 @@ describe('landing retrieval and disclosures', () => {
         expect(hostRes.statusCode).toBe(200);
         expect(hostRes.headers['content-type']).toContain('text/html');
         expect(hostRes.payload).toContain('Hello world');
-        expect(hostRes.payload).toContain('Primary publisher');
         const hostVersionRes = await app.inject({
             method: 'GET',
             url: `/?versionId=${versionId}`,

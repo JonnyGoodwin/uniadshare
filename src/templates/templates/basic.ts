@@ -51,7 +51,7 @@ export const basicTemplate: LandingTemplateModule = {
     consentLabel: 'I agree to receive emails from the publishers listed below.',
     successMessage: 'You are in. Check your inbox for a confirmation.'
   },
-  render: ({ content, disclosureText, context }) => {
+  render: ({ content, context }) => {
     const eyebrow = escapeHtml(content.eyebrow ?? '');
     const headline = escapeHtml(content.headline ?? 'Welcome');
     const body = escapeHtml(content.body ?? '');
@@ -84,7 +84,7 @@ export const basicTemplate: LandingTemplateModule = {
     ${eyebrow ? `<div class="eyebrow">${eyebrow}</div>` : ''}
     <h1>${headline}</h1>
     <p>${body}</p>
-    ${renderLeadForm(content, disclosureText)}
+    ${renderLeadForm(content)}
   </main>
   ${renderLeadCaptureScript(context, content.successMessage)}
 </body>

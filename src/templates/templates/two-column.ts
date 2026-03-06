@@ -88,7 +88,7 @@ export const twoColumnTemplate: LandingTemplateModule = {
     disclaimer:
       'By submitting, you agree to receive investment intelligence and updates from our publishing partners. Unsubscribe at any time. We never sell or share your information.'
   },
-  render: ({ content, disclosureText, context }) => {
+  render: ({ content, context }) => {
     const wordmarkPrefix = escapeHtml(content.wordmarkPrefix ?? '');
     const wordmarkAccent = escapeHtml(content.wordmarkAccent ?? '');
     const wordmarkSuffix = escapeHtml(content.wordmarkSuffix ?? '');
@@ -695,7 +695,7 @@ export const twoColumnTemplate: LandingTemplateModule = {
     </ul>
 
     <div class="form">
-      ${renderLeadForm(content, disclosureText)}
+      ${renderLeadForm(content)}
     </div>
     <p class="disclaimer">${disclaimer}</p>
   </section>

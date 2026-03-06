@@ -9,12 +9,11 @@ export function escapeHtml(value: string): string {
     .replaceAll("'", '&#39;');
 }
 
-export function renderLeadForm(content: Record<string, string>, disclosureText?: string | null): string {
+export function renderLeadForm(content: Record<string, string>): string {
   const ctaLabel = escapeHtml(content.ctaLabel ?? 'Submit');
   const consentLabel = escapeHtml(
     content.consentLabel ?? 'I agree to receive emails from the publishers listed below.'
   );
-  const disclosure = escapeHtml(disclosureText ?? '');
 
   return `
     <form id="lead-form" class="lead-form">
@@ -24,19 +23,11 @@ export function renderLeadForm(content: Record<string, string>, disclosureText?:
       <label for="lead-email">Email</label>
       <input id="lead-email" name="email" type="email" required autocomplete="email" />
 
-      <label class="consent-line">
-        <input id="lead-consent" name="consent" type="checkbox" required />
-        <span>${consentLabel}</span>
-      </label>
+      <p class="consent-line">${consentLabel}</p>
 
       <button type="submit">${ctaLabel}</button>
       <p id="lead-status" aria-live="polite"></p>
     </form>
-
-    <section class="disclosure">
-      <h2>Disclosure</h2>
-      <p>${disclosure}</p>
-    </section>
   `;
 }
 
