@@ -64,9 +64,10 @@ export function renderLeadCaptureScript(context: TemplateContext, successMessage
 
         const data = new FormData(form);
         const params = new URLSearchParams(window.location.search);
+        const name = String(data.get('name') ?? '').trim();
         const payload = {
           email: String(data.get('email') ?? ''),
-          name: String(data.get('name') ?? ''),
+          ...(name ? { name } : {}),
           podId: context.podId,
           landingPageVersionId: context.landingPageVersionId,
           disclosureVersionId: context.disclosureVersionId ?? undefined,
