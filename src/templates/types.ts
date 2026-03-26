@@ -1,4 +1,4 @@
-export type TemplateFieldType = 'text' | 'textarea' | 'image' | 'color' | 'font';
+export type TemplateFieldType = 'text' | 'textarea' | 'image' | 'color' | 'font' | 'checkbox-group';
 
 export type TemplateFieldOption = {
   label: string;
@@ -38,4 +38,5 @@ export type TemplateRenderer = (params: {
 
 export type LandingTemplateModule = LandingTemplateDefinition & {
   render: TemplateRenderer;
+  renderThankYou?: TemplateRenderer;
 };

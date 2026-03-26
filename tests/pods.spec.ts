@@ -35,10 +35,10 @@ describe('pods', () => {
       payload: {
         templateRef: 'basic',
         content: {
+          formFields: 'name,email',
           headline: 'Hello',
           body: 'Body copy',
           ctaLabel: 'Join',
-          consentLabel: 'I agree',
           successMessage: 'Thanks'
         }
       }

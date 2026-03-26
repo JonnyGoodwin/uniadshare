@@ -35,6 +35,10 @@ export function normalizeTemplateContent(
     const value = content[field.key];
     if (typeof value === 'string') {
       normalized[field.key] = value;
+    } else if (field.type === 'checkbox-group' && Array.isArray(value)) {
+      normalized[field.key] = value
+        .filter((item): item is string => typeof item === 'string')
+        .join(',');
     }
   }
   return normalized;
@@ -55,6 +59,25 @@ export function validateTemplateContent(
     if (value === undefined || value === null) {
       if (field.required) {
         errors.push(`content.${field.key}: required`);
+      }
+      continue;
+    }
+
+    if (field.type === 'checkbox-group') {
+      if (typeof value !== 'string' && !Array.isArray(value)) {
+        errors.push(`content.${field.key}: must be a string or string[]`);
+        continue;
+      }
+
+      const selections = Array.isArray(value)
+        ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+        : value
+            .split(',')
+            .map((item) => item.trim())
+            .filter((item) => item.length > 0);
+
+      if (field.required && selections.length === 0) {
+        errors.push(`content.${field.key}: select at least one option`);
       }
       continue;
     }

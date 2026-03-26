@@ -640,6 +640,41 @@ export function PodsPage() {
                         );
                       }
 
+                      if (field.type === 'checkbox-group') {
+                        const selected = value
+                          .split(',')
+                          .map((item) => item.trim())
+                          .filter((item) => item.length > 0);
+                        return (
+                          <div key={field.key} className="block text-sm font-medium text-slate-700 mb-2">
+                            <span className="block mb-2">{field.label}</span>
+                            <div className="flex flex-wrap gap-3">
+                              {(field.options ?? []).map((option) => {
+                                const checked = selected.includes(option.value);
+                                return (
+                                  <label
+                                    key={option.value}
+                                    className="inline-flex items-center gap-2 rounded border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={checked}
+                                      onChange={(event) => {
+                                        const next = event.target.checked
+                                          ? [...selected, option.value]
+                                          : selected.filter((item) => item !== option.value);
+                                        setTemplateFieldValue(field.key, next.join(','));
+                                      }}
+                                    />
+                                    <span>{option.label}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      }
+
                       return (
                         <TextInput
                           key={field.key}

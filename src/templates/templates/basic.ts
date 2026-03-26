@@ -6,6 +6,17 @@ export const basicTemplate: LandingTemplateModule = {
   name: 'Basic Lead Capture',
   description: 'Simple hero with headline, supporting copy, and a lead form.',
   fields: [
+    {
+      key: 'formFields',
+      label: 'Form Fields',
+      type: 'checkbox-group',
+      required: true,
+      options: [
+        { label: 'Name', value: 'name' },
+        { label: 'Email', value: 'email' },
+        { label: 'Phone Number', value: 'phone' }
+      ]
+    },
     { key: 'eyebrow', label: 'Eyebrow', type: 'text', placeholder: 'Free newsletter' },
     {
       key: 'headline',
@@ -29,13 +40,6 @@ export const basicTemplate: LandingTemplateModule = {
       placeholder: 'Get My Free Tips'
     },
     {
-      key: 'consentLabel',
-      label: 'Consent Label',
-      type: 'text',
-      required: true,
-      placeholder: 'I agree to receive emails from the publishers listed below.'
-    },
-    {
       key: 'successMessage',
       label: 'Success Message',
       type: 'text',
@@ -44,11 +48,11 @@ export const basicTemplate: LandingTemplateModule = {
     }
   ],
   defaultContent: {
+    formFields: 'name,email',
     eyebrow: 'Free newsletter',
     headline: 'Get smarter growth ideas every week',
     body: 'Join thousands of operators receiving actionable playbooks, benchmarks, and experiments.',
     ctaLabel: 'Join Free',
-    consentLabel: 'I agree to receive emails from the publishers listed below.',
     successMessage: 'You are in. Check your inbox for a confirmation.'
   },
   render: ({ content, context }) => {
@@ -86,7 +90,7 @@ export const basicTemplate: LandingTemplateModule = {
     <p>${body}</p>
     ${renderLeadForm(content)}
   </main>
-  ${renderLeadCaptureScript(context, content.successMessage)}
+  ${renderLeadCaptureScript(context)}
 </body>
 </html>`;
   }

@@ -70,6 +70,20 @@ describe('lead intake', () => {
     expect(body.lead.id).toBeTruthy();
   });
 
+  it('accepts a lead with phone only and returns 202', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/leads',
+      payload: {
+        phone: '555-0100',
+        podId: 'cmp_phone_only'
+      }
+    });
+
+    expect(response.statusCode).toBe(202);
+    expect(response.json().lead.podId).toBe('cmp_phone_only');
+  });
+
   it('returns 400 on invalid lead payload', async () => {
     const response = await app.inject({
       method: 'POST',

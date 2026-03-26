@@ -17,6 +17,17 @@ export const giftForNewReadersTemplate: LandingTemplateModule = {
   description: 'Editorial parchment-style offer page with partner perks and social proof.',
   fields: [
     {
+      key: 'formFields',
+      label: 'Form Fields',
+      type: 'checkbox-group',
+      required: true,
+      options: [
+        { label: 'Name', value: 'name' },
+        { label: 'Email', value: 'email' },
+        { label: 'Phone Number', value: 'phone' }
+      ]
+    },
+    {
       key: 'logoImage',
       label: 'Logo Image',
       type: 'image',
@@ -143,13 +154,6 @@ export const giftForNewReadersTemplate: LandingTemplateModule = {
       placeholder: 'Get My Free Offers'
     },
     {
-      key: 'consentLabel',
-      label: 'Consent Label',
-      type: 'text',
-      required: true,
-      placeholder: 'By subscribing, I agree to receive emails from the publishers listed above.'
-    },
-    {
       key: 'successHeading',
       label: 'Success Heading',
       type: 'text',
@@ -165,6 +169,7 @@ export const giftForNewReadersTemplate: LandingTemplateModule = {
     }
   ],
   defaultContent: {
+    formFields: 'email',
     logoImage: 'https://thepourover.org/wp-content/uploads/2024/09/cropped-coral_circle_icon.png',
     logoName: 'The Pourover',
     headerFont: DEFAULT_GIFT_HEADER_FONT,
@@ -184,8 +189,6 @@ export const giftForNewReadersTemplate: LandingTemplateModule = {
     proofNumber: '1.5M+',
     proofLabel: 'Christians reading every morning',
     ctaLabel: 'Get My Free Offers',
-    consentLabel:
-      'By subscribing, I agree to receive emails from the Pourover and the partners listed above.',
     successHeading: "You're in.",
     successMessage: 'Check your inbox — your first edition and partner offers are on their way.'
   },
@@ -209,10 +212,6 @@ export const giftForNewReadersTemplate: LandingTemplateModule = {
     const proofNumber = escapeHtml(content.proofNumber ?? '');
     const proofLabel = escapeHtml(content.proofLabel ?? '');
     const ctaLabel = escapeHtml(content.ctaLabel ?? 'Submit');
-    const consentLabel = escapeHtml(content.consentLabel ?? 'I agree to receive emails from the publishers listed below.');
-    const successHeading = escapeHtml(content.successHeading ?? 'Success');
-    const successMessage = escapeHtml(content.successMessage ?? 'Thanks, your opt-in was received.');
-
     return `<!doctype html>
 <html lang="en">
   <head>
@@ -342,28 +341,11 @@ export const giftForNewReadersTemplate: LandingTemplateModule = {
       .asset-bullet { margin-top: 7px; width: 5px; height: 5px; border-radius: 50%; background: var(--coral); justify-self: center; }
       .asset-text { font-family: var(--font-header); font-size: 1.0625rem; line-height: 1.55; color: var(--muted); }
       .asset-name { font-weight: 500; font-style: italic; color: var(--ink-mid); }
-      .consent { margin-bottom: 18px; }
-      .consent-text { font-size: 0.725rem; font-weight: 300; line-height: 1.65; color: var(--muted); letter-spacing: 0.01em; }
       .disclosure { margin-bottom: 30px; font-size: 0.7rem; color: var(--muted); line-height: 1.55; }
       .disclosure h2 { display: none; }
       .proof { padding-top: 26px; border-top: 1px solid var(--rule); text-align: center; }
       .proof-number { font-family: var(--font-header); font-size: 2rem; font-weight: 400; color: var(--ink); line-height: 1; margin-bottom: 4px; }
       .proof-label { font-size: 0.725rem; font-weight: 300; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-      .success { display: none; text-align: center; padding: 24px 0; }
-      .success.visible { display: block; }
-      .success-ring {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        border: 2px solid var(--coral);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 32px;
-      }
-      .success-ring svg { width: 22px; height: 22px; stroke: var(--coral); }
-      .success-hed { font-family: var(--font-header); font-size: 3.5rem; font-style: italic; font-weight: 300; color: var(--ink); line-height: 1; margin-bottom: 18px; }
-      .success-msg { font-family: var(--font-header); font-size: 1.125rem; line-height: 1.7; color: var(--muted); max-width: 380px; margin: 0 auto; }
       @media (max-width: 560px) {
         .page { padding: 32px 20px 60px; }
         .logo-row { margin-bottom: 40px; }
@@ -418,9 +400,6 @@ export const giftForNewReadersTemplate: LandingTemplateModule = {
               <p class="asset-text"><span class="asset-name">${asset2Provider}</span> - ${asset2}</p>
             </div>
           </div>
-
-          <p class="consent consent-text a7">${consentLabel}</p>
-
           <p id="lead-status" aria-live="polite"></p>
         </form>
 
@@ -430,46 +409,9 @@ export const giftForNewReadersTemplate: LandingTemplateModule = {
         </div>
       </div>
 
-      <div class="success col" id="success">
-        <div class="success-ring">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </div>
-        <h2 class="success-hed">${successHeading}</h2>
-        <p class="success-msg">${successMessage}</p>
-      </div>
     </div>
 
-    ${renderLeadCaptureScript(context, content.successMessage)}
-    <script>
-      (() => {
-        const email = document.getElementById('lead-email');
-        const status = document.getElementById('lead-status');
-        const main = document.getElementById('main');
-        const success = document.getElementById('success');
-        const expectedSuccess = ${JSON.stringify(content.successMessage ?? 'Thanks, your opt-in was received.').replaceAll('<', '\\u003c')};
-
-        if (email) {
-          email.addEventListener('input', () => {
-            email.style.borderColor = '';
-          });
-        }
-
-        if (!status || !main || !success) {
-          return;
-        }
-
-        const observer = new MutationObserver(() => {
-          if (status.textContent === expectedSuccess) {
-            main.style.display = 'none';
-            success.classList.add('visible');
-          }
-        });
-
-        observer.observe(status, { childList: true, characterData: true, subtree: true });
-      })();
-    </script>
+    ${renderLeadCaptureScript(context)}
   </body>
 </html>`;
   }

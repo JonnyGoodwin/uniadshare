@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { loginAsAdmin, testAdminEnv } from './admin-auth.js';
 import { buildApp } from '../src/app.js';
 import { loadEnv } from '../src/config/env.js';
+import { renderThankYouPage } from '../src/templates/render.js';
 
 const env = loadEnv({ NODE_ENV: 'test', PORT: '3001', BASE_DOMAIN: 'example.com', ...testAdminEnv });
 const app = buildApp(env);
@@ -41,10 +42,10 @@ describe('landing retrieval and disclosures', () => {
       payload: {
         templateRef: 'basic',
         content: {
+          formFields: 'name,email',
           headline: 'Hello world',
           body: 'Top operators only',
           ctaLabel: 'Join Free',
-          consentLabel: 'I agree',
           successMessage: 'Thanks'
         },
         disclosureVersionId: disclosureId
@@ -102,5 +103,35 @@ describe('landing retrieval and disclosures', () => {
     });
     expect(draftRes.statusCode).toBe(200);
     expect(draftRes.json().landingPageVersion.id).toBe(versionId);
+
+    const thankYouRes = await app.inject({
+      method: 'GET',
+      url: '/thank-you',
+      headers: { host: 'lander.example.com' }
+    });
+    expect(thankYouRes.statusCode).toBe(200);
+    expect(thankYouRes.headers['content-type']).toContain('text/html');
+    expect(thankYouRes.payload).toContain('Your resources are unlocked');
+    expect(thankYouRes.payload).toContain('Asset Stack');
+  });
+
+  it('renders the default thank-you page with inherited theme styling', () => {
+    const html = renderThankYouPage(
+      'basic',
+      {
+        formFields: 'name,email',
+        headline: 'Hello world',
+        successMessage: 'Thanks for subscribing.'
+      },
+      '',
+      {
+        podId: 'pod_test',
+        landingPageVersionId: 'lpv_test'
+      }
+    );
+
+    expect(html).toContain('Your resources are unlocked');
+    expect(html).toContain('Asset #1 - Available now');
+    expect(html).toContain('--accent-color: #0F766E;');
   });
 });

@@ -7,6 +7,17 @@ export const toolkitTemplate: LandingTemplateModule = {
   description: 'Resource-style page with toolkit bullets and a focused capture panel.',
   fields: [
     {
+      key: 'formFields',
+      label: 'Form Fields',
+      type: 'checkbox-group',
+      required: true,
+      options: [
+        { label: 'Name', value: 'name' },
+        { label: 'Email', value: 'email' },
+        { label: 'Phone Number', value: 'phone' }
+      ]
+    },
+    {
       key: 'eyebrow',
       label: 'Eyebrow',
       type: 'text',
@@ -105,13 +116,6 @@ export const toolkitTemplate: LandingTemplateModule = {
       placeholder: 'Send Me the Toolkit'
     },
     {
-      key: 'consentLabel',
-      label: 'Consent Label',
-      type: 'text',
-      required: true,
-      placeholder: 'I agree to receive emails from the publishers listed below.'
-    },
-    {
       key: 'successMessage',
       label: 'Success Message',
       type: 'text',
@@ -120,6 +124,7 @@ export const toolkitTemplate: LandingTemplateModule = {
     }
   ],
   defaultContent: {
+    formFields: 'name,email',
     eyebrow: 'Free Resource Bundle',
     headline: 'Get the Toolkit',
     subheadline:
@@ -135,7 +140,6 @@ export const toolkitTemplate: LandingTemplateModule = {
     asset4Provider: 'Content Lift',
     proofLine: 'Used by creators, agencies, and growth teams to scale acquisition faster.',
     ctaLabel: 'Send Me the Toolkit',
-    consentLabel: 'I agree to receive emails from the publishers listed below.',
     successMessage: 'Success. Check your inbox for access details.'
   },
   render: ({ content, context }) => {
@@ -388,7 +392,7 @@ export const toolkitTemplate: LandingTemplateModule = {
       </div>
     </div>
   </div>
-  ${renderLeadCaptureScript(context, content.successMessage)}
+  ${renderLeadCaptureScript(context)}
 </body>
 </html>`;
   }

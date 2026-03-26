@@ -3,16 +3,20 @@ import type { Lead, LeadInput, LeadRepository } from '../../domain/lead.js';
 
 export class PrismaLeadRepository implements LeadRepository {
   async save(input: LeadInput): Promise<Lead> {
+    const metadata = {
+      ...(input.metadata ?? {}),
+      ...(input.phone ? { phone: input.phone } : {})
+    };
     const record = await prisma.lead.create({
       data: {
-        email: input.email,
+        email: input.email ?? '',
         name: input.name,
         podId: input.podId,
         landingPageVersionId: input.landingPageVersionId,
         disclosureVersionId: input.disclosureVersionId,
         consentedAt: input.consentedAt ?? new Date(),
         disclosureHash: input.disclosureHash,
-        metadata: input.metadata ?? {},
+        metadata,
         events: {
           create: {
             type: 'consent_recorded',
@@ -26,8 +30,12 @@ export class PrismaLeadRepository implements LeadRepository {
 
     return {
       id: record.id,
-      email: record.email,
+      email: record.email || undefined,
       name: record.name ?? undefined,
+      phone:
+        record.metadata && typeof record.metadata === 'object' && 'phone' in (record.metadata as Record<string, unknown>)
+          ? ((record.metadata as Record<string, unknown>).phone as string | undefined)
+          : undefined,
       podId: record.podId,
       landingPageVersionId: record.landingPageVersionId,
       disclosureVersionId: record.disclosureVersionId,
@@ -52,8 +60,12 @@ export class PrismaLeadRepository implements LeadRepository {
 
     return leads.map((record) => ({
       id: record.id,
-      email: record.email,
+      email: record.email || undefined,
       name: record.name ?? undefined,
+      phone:
+        record.metadata && typeof record.metadata === 'object' && 'phone' in (record.metadata as Record<string, unknown>)
+          ? ((record.metadata as Record<string, unknown>).phone as string | undefined)
+          : undefined,
       podId: record.podId,
       landingPageVersionId: record.landingPageVersionId ?? undefined,
       disclosureVersionId: record.disclosureVersionId ?? undefined,

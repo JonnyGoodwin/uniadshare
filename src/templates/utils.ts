@@ -1,5 +1,13 @@
 import type { TemplateContext } from './types.js';
 
+function parseFormFields(value: string | undefined): Set<string> {
+  const selected = (value ?? 'name,email')
+    .split(',')
+    .map((item) => item.trim().toLowerCase())
+    .filter((item) => item.length > 0);
+  return new Set(selected.length > 0 ? selected : ['name', 'email']);
+}
+
 export function escapeHtml(value: string): string {
   return value
     .replaceAll('&', '&amp;')
@@ -9,21 +17,23 @@ export function escapeHtml(value: string): string {
     .replaceAll("'", '&#39;');
 }
 
-export function renderLeadForm(content: Record<string, string>): string {
+export function renderLeadForm(
+  content: Record<string, string>
+): string {
   const ctaLabel = escapeHtml(content.ctaLabel ?? 'Submit');
-  const consentLabel = escapeHtml(
-    content.consentLabel ?? 'I agree to receive emails from the publishers listed below.'
-  );
+  const formFields = parseFormFields(content.formFields);
+  const askName = formFields.has('name');
+  const askEmail = formFields.has('email');
+  const askPhone = formFields.has('phone');
 
   return `
     <form id="lead-form" class="lead-form">
-      <label for="lead-name">First name (optional)</label>
-      <input id="lead-name" name="name" type="text" autocomplete="given-name" />
-
-      <label for="lead-email">Email</label>
-      <input id="lead-email" name="email" type="email" required autocomplete="email" />
-
-      <p class="consent-line">${consentLabel}</p>
+      ${askName ? `<label for="lead-name">Name</label>
+      <input id="lead-name" name="name" type="text" autocomplete="name" />` : ''}
+      ${askEmail ? `<label for="lead-email">Email</label>
+      <input id="lead-email" name="email" type="email" autocomplete="email" />` : ''}
+      ${askPhone ? `<label for="lead-phone">Phone Number</label>
+      <input id="lead-phone" name="phone" type="tel" autocomplete="tel" />` : ''}
 
       <button type="submit">${ctaLabel}</button>
       <p id="lead-status" aria-live="polite"></p>
@@ -31,20 +41,22 @@ export function renderLeadForm(content: Record<string, string>): string {
   `;
 }
 
-export function renderLeadCaptureScript(context: TemplateContext, successMessage?: string): string {
+export function renderLeadCaptureScript(context: TemplateContext): string {
   const scriptContext = JSON.stringify(context).replaceAll('<', '\\u003c');
-  const safeSuccessMessage = JSON.stringify(successMessage ?? 'Thanks, your opt-in was received.').replaceAll(
-    '<',
-    '\\u003c'
-  );
 
   return `<script>
     (() => {
       const context = ${scriptContext};
-      const successMessage = ${safeSuccessMessage};
       const form = document.getElementById('lead-form');
       const status = document.getElementById('lead-status');
       if (!form || !status) return;
+
+      const resolveThankYouUrl = () => {
+        const url = new URL(window.location.href);
+        const normalizedPath = url.pathname === '/' ? '/' : url.pathname.replace(/\\/+$/, '');
+        url.pathname = normalizedPath === '/' ? '/thank-you' : normalizedPath + '/thank-you';
+        return url.toString();
+      };
 
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -56,9 +68,12 @@ export function renderLeadCaptureScript(context: TemplateContext, successMessage
         const data = new FormData(form);
         const params = new URLSearchParams(window.location.search);
         const name = String(data.get('name') ?? '').trim();
+        const email = String(data.get('email') ?? '').trim();
+        const phone = String(data.get('phone') ?? '').trim();
         const payload = {
-          email: String(data.get('email') ?? ''),
+          ...(email ? { email } : {}),
           ...(name ? { name } : {}),
+          ...(phone ? { phone } : {}),
           podId: context.podId,
           landingPageVersionId: context.landingPageVersionId,
           disclosureVersionId: context.disclosureVersionId ?? undefined,
@@ -87,9 +102,7 @@ export function renderLeadCaptureScript(context: TemplateContext, successMessage
             throw new Error(text || 'Failed to submit');
           }
 
-          form.reset();
-          status.textContent = successMessage;
-          status.style.color = '#166534';
+          window.location.assign(resolveThankYouUrl());
         } catch (error) {
           status.textContent = error instanceof Error ? error.message : 'Unable to submit right now';
           status.style.color = '#b91c1c';

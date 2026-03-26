@@ -40,14 +40,18 @@ export class DeliveryService {
     lead: Lead,
     sponsors: { sponsorId: string; webhookEndpoint: string; role: string }[]
   ): Promise<void> {
-    const emailHash = createHash('sha256').update(lead.email.toLowerCase()).digest('hex');
+    const emailHash = lead.email
+      ? createHash('sha256').update(lead.email.toLowerCase()).digest('hex')
+      : null;
     const targets =
       sponsors.length > 0
         ? sponsors
         : [{ sponsorId: 'default', webhookEndpoint: this.defaultEndpoint, role: 'primary' }];
 
     for (const target of targets) {
-      const suppressed = await this.suppression.isSuppressed(target.sponsorId, emailHash);
+      const suppressed = emailHash
+        ? await this.suppression.isSuppressed(target.sponsorId, emailHash)
+        : false;
       const job = await this.queue.enqueue({
         leadId: lead.id,
         sponsorId: target.sponsorId,
@@ -64,6 +68,7 @@ export class DeliveryService {
         lead: {
           id: lead.id,
           email: lead.email,
+          phone: lead.phone,
           podId: lead.podId,
           landingPageVersionId: lead.landingPageVersionId,
           disclosureVersionId: lead.disclosureVersionId,

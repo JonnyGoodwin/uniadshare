@@ -5,8 +5,9 @@ import type { DisclosureService } from '../services/disclosure-service.js';
 import type { LeadService } from '../services/lead-service.js';
 
 const leadSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email().optional(),
   name: z.string().trim().min(1).optional(),
+  phone: z.string().trim().min(1).optional(),
   podId: z.string().min(1),
   landingPageVersionId: z.string().min(1).optional(),
   disclosureVersionId: z.string().min(1).optional(),
@@ -36,6 +37,10 @@ export function registerLeadRoutes(
     if (!parsed.success) {
       const message = parsed.error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('; ');
       return reply.badRequest(message);
+    }
+
+    if (!parsed.data.email && !parsed.data.name && !parsed.data.phone) {
+      return reply.badRequest('At least one of email, name, or phone is required');
     }
 
     const leadInput = {

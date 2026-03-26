@@ -38,6 +38,17 @@ export const twoColumnTemplate: LandingTemplateModule = {
   name: 'two-column',
   description: 'Premium two-column offer page with animated report cards.',
   fields: [
+    {
+      key: 'formFields',
+      label: 'Form Fields',
+      type: 'checkbox-group',
+      required: true,
+      options: [
+        { label: 'Name', value: 'name' },
+        { label: 'Email', value: 'email' },
+        { label: 'Phone Number', value: 'phone' }
+      ]
+    },
     { key: 'wordmarkPrefix', label: 'Wordmark Prefix', type: 'text', required: true },
     { key: 'wordmarkAccent', label: 'Wordmark Accent', type: 'text', required: true },
     { key: 'wordmarkSuffix', label: 'Wordmark Suffix', type: 'text', required: true },
@@ -58,11 +69,11 @@ export const twoColumnTemplate: LandingTemplateModule = {
     { key: 'mutedTextColor', label: 'Muted Text Color', type: 'color', required: true },
     { key: 'accentColor', label: 'Accent Color', type: 'color', required: true },
     { key: 'ctaLabel', label: 'CTA Label', type: 'text', required: true },
-    { key: 'consentLabel', label: 'Consent Label', type: 'text', required: true },
     { key: 'successMessage', label: 'Success Message', type: 'text', required: true },
     { key: 'disclaimer', label: 'Disclaimer', type: 'textarea', required: true }
   ],
   defaultContent: {
+    formFields: 'email',
     wordmarkPrefix: 'Wealth',
     wordmarkAccent: 'Daily',
     wordmarkSuffix: 'Publishing',
@@ -83,7 +94,6 @@ export const twoColumnTemplate: LandingTemplateModule = {
     mutedTextColor: '#A8A8C2',
     accentColor: '#C4922A',
     ctaLabel: 'Get Access',
-    consentLabel: 'I agree to receive investment intelligence and updates from publishing partners.',
     successMessage: 'Success. Check your inbox for access details.',
     disclaimer:
       'By submitting, you agree to receive investment intelligence and updates from our publishing partners. Unsubscribe at any time. We never sell or share your information.'
@@ -709,7 +719,7 @@ export const twoColumnTemplate: LandingTemplateModule = {
     guide.addEventListener('mouseleave', () => cards[i]?.classList.remove('card-hovered'));
   });
 </script>
-${renderLeadCaptureScript(context, content.successMessage)}
+${renderLeadCaptureScript(context)}
 </body>
 </html>`;
   }

@@ -11,8 +11,9 @@ export type LeadMetadata = {
 };
 
 export type LeadInput = {
-  email: string;
+  email?: string;
   name?: string;
+  phone?: string;
   podId: string;
   landingPageVersionId?: string;
   disclosureVersionId?: string;

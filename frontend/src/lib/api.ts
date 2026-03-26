@@ -50,7 +50,7 @@ export type GoogleFontOption = Required<LandingTemplateFieldOption>;
 export type LandingTemplateField = {
   key: string;
   label: string;
-  type: 'text' | 'textarea' | 'image' | 'color' | 'font';
+  type: 'text' | 'textarea' | 'image' | 'color' | 'font' | 'checkbox-group';
   required?: boolean;
   placeholder?: string;
   options?: LandingTemplateFieldOption[];
